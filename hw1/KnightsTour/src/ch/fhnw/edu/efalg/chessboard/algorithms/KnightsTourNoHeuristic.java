@@ -10,11 +10,18 @@ import java.util.*;
 /**
  * Naive implementation of an algorithm to find a knight's tour using backtracking.
  * No Heuristics are used.
+ * 
+ * IMPORTANT: Java VM Stack size may need to be increased to avoid a stackoverflow!
  *
  * @author Patric Steiner
  */
 public class KnightsTourNoHeuristic extends AbstractKnightsTourAlgorithm {
 
+	/**
+	 * Use class variable to store board, so we can avoid passing it as argument in each call.	
+	 */
+	protected ChessBoard board;
+	
 	/**
 	 * Variable to keep track of the amount of fields that have been visited.
 	 */
@@ -30,8 +37,9 @@ public class KnightsTourNoHeuristic extends AbstractKnightsTourAlgorithm {
 	protected void findKnightTour(final ChessBoard board, final Position startPos) {
 		// set the first field on the board according to startPos and then run the backtracking-algorithm.
 		visitedFields = 0;
+		this.board = board;
 		board.setField(startPos, new KnightsTourField(visitedFields++));
-		findSolution(board, startPos);
+		findSolution(startPos);
 	}
 
 	/**
@@ -50,21 +58,20 @@ public class KnightsTourNoHeuristic extends AbstractKnightsTourAlgorithm {
 	/**
 	 * Helper method that tries to find a solution by using backtracking.
 	 *
-	 * @param board chess board to search
 	 * @param pos current position
 	 * @return true if a solution was found or the algorithm has been stopped by the user, false otherwise.
 	 */
-	protected boolean findSolution(final ChessBoard board, final Position pos) {
+	protected boolean findSolution(final Position pos) {
 		// if the user has stopped the algorithm, return true just to make sure the algorithm immediately stops.
 		if (hasBeenStopped() || isSolution(board)) return true;
 		// from the current position, find all possible moves and try every one of them
-		Stack<Position> possibleMoves = findPossibleMoves(board, pos);
+		Stack<Position> possibleMoves = findPossibleMoves(pos);
 		while (possibleMoves.size() > 0) {
 			Position nextPos = possibleMoves.pop();
 			// get the first move out of the possibilities and adjust the board and counter accordingly
 			board.setField(nextPos, new KnightsTourField(visitedFields++));
 			// recursively call this function again with one step advanced. If a solution is found, we are done and return true.
-			if (findSolution(board, nextPos)) return true;
+			if (findSolution(nextPos)) return true;
 			// if this move does not lead to a solution, undo the adjustments and try the next move.
 			visitedFields--;
 			board.setField(nextPos, new KnightsTourField());
@@ -76,11 +83,10 @@ public class KnightsTourNoHeuristic extends AbstractKnightsTourAlgorithm {
 	/**
 	 * Finds all possible moves from the current situation given by board and pos.
 	 *
-	 * @param board chess board to search
 	 * @param pos current position
 	 * @return a Stack<Position> containing all possible moves in no particular order.
 	 */
-	protected Stack<Position> findPossibleMoves(final ChessBoard board, final Position pos) {
+	protected Stack<Position> findPossibleMoves(final Position pos) {
 		Stack<Position> possibleMoves = new Stack<>();
 		// try all the moves a knight can do
 		for (int i = 0; i < MOVES.length; i++) {
