@@ -1,4 +1,3 @@
-import javafx.concurrent.Task;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -7,53 +6,39 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 
-public class NonoPane extends BorderPane implements NonogramListener {
+public class NonoPane extends BorderPane {
 	
-	private Nonogram nonogram;
-	int gridWidth;
-	int gridHeight;
-	Canvas canvas;
+	protected Nonogram nonogram;
+	protected int gridWidth;
+	protected int gridHeight;
+	protected Canvas canvas;
 	
 	public NonoPane(Nonogram nonogram) {
 		canvas = new Canvas();
 		setCenter(canvas);
 		canvas.widthProperty().bind(widthProperty());
 		canvas.heightProperty().bind(heightProperty());
-		widthProperty().addListener(e -> update());
-		heightProperty().addListener(e -> update());
+		widthProperty().addListener(e -> draw());
+		heightProperty().addListener(e -> draw());
 		setNonogram(nonogram);
 	}
 	
-	void setNonogram(Nonogram nonogram) {
+	protected void setNonogram(Nonogram nonogram) {
 		this.nonogram = nonogram;
-		nonogram.addListener(this);
 		gridHeight = nonogram.height + nonogram.colHints.stream().max((l1, l2) -> l1.size() - l2.size()).get().size();
 		gridWidth = nonogram.width + nonogram.rowHints.stream().max((l1, l2) -> l1.size() - l2.size()).get().size();
-		update();
-		Task<Void> task = new Task<Void>() {
-			@Override
-			protected Void call() throws Exception {
-				nonogram.findSolution(0);
-				return null;
-			}
-		};
-		new Thread(task).start();
-	}
-	
-	double scaleX(double x) {
-		return getWidth() / gridWidth * x;
-	}
-	
-	double scaleY(double y) {
-		return getHeight() / gridHeight * y;	
-	}
-
-	@Override
-	public void update() {	
 		draw();
 	}
 	
-	void draw() {
+	protected double scaleX(double x) {
+		return getWidth() / gridWidth * x;
+	}
+	
+	protected double scaleY(double y) {
+		return getHeight() / gridHeight * y;	
+	}
+	
+	public void draw() {
 		GraphicsContext gc = canvas.getGraphicsContext2D();
 		gc.setFill(Color.WHITE);
 		gc.fillRect(0, 0, getWidth(), getHeight());
@@ -79,9 +64,12 @@ public class NonoPane extends BorderPane implements NonogramListener {
 		}
 		for (int i = 0; i < nonogram.height; i++) {
 			for (int j = 0; j < nonogram.width; j++) {
-				if (nonogram.get(i, j) == Nonogram.FILLED) gc.setFill(Color.BLACK);
-				else if (nonogram.get(i, j) == Nonogram.EMPTY) gc.setFill(Color.DARKORCHID);
-				else gc.setFill(Color.LIGHTGRAY);
+				Color color = Color.LIGHTGRAY;
+				if (nonogram.get(i, j) == Nonogram.FILLED) color = Color.BLACK;
+				else if (nonogram.get(i, j) == Nonogram.EMPTY) color = Color.DARKORCHID;
+				if (nonogram.predictions[i][j] == Nonogram.FILLED) color = Color.GRAY;
+				else if (nonogram.predictions[i][j] == Nonogram.EMPTY) color = Color.ORCHID;
+				gc.setFill(color);
 				double x = j + gridWidth - nonogram.width;
 				double y = i + gridHeight - nonogram.height;
 				gc.fillRect(scaleX(x), scaleY(y), scaleX(x+1), scaleY(y+1));
