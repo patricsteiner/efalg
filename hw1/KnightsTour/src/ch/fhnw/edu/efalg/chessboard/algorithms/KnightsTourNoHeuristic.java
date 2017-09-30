@@ -11,7 +11,7 @@ import java.util.*;
  * Naive implementation of an algorithm to find a knight's tour using backtracking.
  * No Heuristics are used.
  * 
- * IMPORTANT: Java VM Stack size may need to be increased to avoid a stackoverflow!
+ * IMPORTANT: Java VM Stack size may need to be increased to avoid a stackoverflow! (-Xss2M)
  *
  * @author Patric Steiner
  */
