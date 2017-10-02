@@ -25,14 +25,14 @@ public class NonoMain extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		nonogram = new Nonogram(new FileInputStream(new File("14x22.txt")));
+		nonogram = new Nonogram(new FileInputStream(new File("27x34.txt")));
 		NonoPane nonoPane = new NonoPane(nonogram);
 		nonoPane.setPrefWidth(700);
 		nonoPane.setPrefHeight(700);
 		Scene s = new Scene(nonoPane);
 		primaryStage.setScene(s);
 		nonoPane.setVisible(true);
-		primaryStage.show(); //nonogram.solve(0);
+		primaryStage.show();
 		Task<Boolean> solverTask = new Task<Boolean>() {
 			@Override
 			protected Boolean call() throws Exception {
@@ -51,7 +51,7 @@ public class NonoMain extends Application {
 				new Alert(AlertType.ERROR, "Not gonna happen. You wasted " + time + " of your life.").showAndWait();
 			}
 		});
-		solverTask.setOnFailed(e -> System.out.println("solver Task failed!"));
+		solverTask.setOnFailed(e -> System.err.println("Solver Task failed!"));
 		new Thread(solverTask).start();
 		
 		Timeline guiUpdater = new Timeline(new KeyFrame(Duration.millis(100), e -> nonoPane.draw()));
@@ -62,6 +62,7 @@ public class NonoMain extends Application {
 	@Override
 	public void stop() throws Exception {
 		nonogram.stopSolving();
+		System.out.println(nonogram);
 		super.stop();
 	}
 }
