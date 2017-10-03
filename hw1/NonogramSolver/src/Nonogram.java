@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Nonogram {
 	
@@ -103,6 +104,41 @@ public class Nonogram {
     	while (j < width) matrix[i][j++] = EMPTY;
 	}
 	
+	protected boolean shiftRight(int row) {
+		if (matrix[row][width-1] == FILLED) return false;
+		for (int j = width - 1; j > 0; j--) {
+			matrix[row][j] = matrix[row][j-1];
+			matrix[row][j-1] = EMPTY;
+		}
+		return true;
+	}
+	
+	protected void firstPermutationWithPredictions(int row) {
+		firstPermutation(row);
+		int firstBlockSize = rowHints.get(row).get(0);
+		if (firstBlockSize == 0 || rowHints.get(row).size() < 2) return;
+		if (predictions[row][0] == FILLED) return;
+		int sumOfAllBlocksButFirst = 0;
+		for (int x = 1; x < rowHints.get(row).size(); x++) {
+			sumOfAllBlocksButFirst += rowHints.get(row).get(x);
+		}
+		int filled = 0;
+		int unknown = 0;
+		int p = width - 1;
+		while (filled <= sumOfAllBlocksButFirst) {
+			if (predictions[row][p] == FILLED) filled++;
+			else if (predictions[row][p] == UNKNOWN) unknown++;
+			if (--p < 0) return;
+		}
+		p++; // last cell of first block shall be placed on p
+		int shift = p - firstBlockSize + 1;
+		if (shift < 1) return;
+		for (int j = width - 1; j > p; j--) {
+			matrix[row][j] = matrix[row][j - shift];
+			matrix[row][j - shift] = EMPTY;
+		}
+	}
+	
 	// reset row to all 0s. later needs to reset to a state where all "fixed" cells are set.
 	protected void resetRow(int i) {
 		for (int j = 0; j < width; j++) {
@@ -113,8 +149,8 @@ public class Nonogram {
 	
 	protected boolean findSolution(int row) throws InterruptedException {
     	if (stopped) return true;
-    	backtrackCounter++;
-    	System.out.println(timeSpentPermuting/1000000 + " vs checking: " + timeSpentChecking/1000000);
+    	//backtrackCounter++;
+    	//System.out.println(timeSpentPermuting/1000000 + " vs checking: " + timeSpentChecking/1000000);
     	
     	//if (row >= height /*|| rowCounter > height*/) return false;
         
@@ -124,29 +160,36 @@ public class Nonogram {
         	return true;
         }
         
-    	long time = System.nanoTime();
+    	//long time = System.nanoTime();
     	makePrediction(row);
 
     	boolean nextPermutation = nextPermutation(row);
-
-    	time = System.nanoTime() - time;
-    	timeSpentPermuting += time;
+//    	long permutationCounter = 1;
+    	
+    	//time = System.nanoTime() - time;
+    	//timeSpentPermuting += time;
 
         while (nextPermutation) {
-        	permutationCounter++;
+//        	permutationCounter++;
+//        	System.out.println(permutationCounter);
+//        	if (permutationCounter > 10000000000L) {
+//        		firstPermutation(row);
+//        		shiftRight(row);
+//        		permutationCounter = 1;
+//        	}
         	if (delay > 0) Thread.sleep(delay);
-        	time = System.nanoTime();
+        	//time = System.nanoTime();
         	boolean allGood = matchesPrediction(row);// && checkCols();
-        	time = System.nanoTime() - time;
-        	timeSpentChecking += time;
+        	//time = System.nanoTime() - time;
+        	//timeSpentChecking += time;
         	if (allGood) {
         		if (findSolution(row + 1)) return true;
         	}
-        	time = System.nanoTime();
+        	//time = System.nanoTime();
         	nextPermutation = nextPermutation(row);
         	
-        	time = System.nanoTime() - time;
-        	timeSpentPermuting += time;
+        	//time = System.nanoTime() - time;
+        	//timeSpentPermuting += time;
         }
         resetRow(row);
         rowCounter--;
@@ -199,23 +242,19 @@ public class Nonogram {
     protected boolean checkCol(int j) {
     	Iterator<Integer> hints = colHints.get(j).iterator();
     	int definiteBlockSize = 0;
-    	//int possibleBlockSize = 0;
     	int hint = hints.next();
     	for (int i = 0; i < height; i++) {
-    		//if (matrix[i][j] == UNKNOWN) possibleBlockSize++;
     		if (matrix[i][j] == FILLED) { 
     			definiteBlockSize++;
     			if (definiteBlockSize > hint) return false;
-    		/*possibleBlockSize++;*/ 
     		}
     		else if (matrix[i][j] == EMPTY && definiteBlockSize > 0) {
     			if (definiteBlockSize != hint) return false;
     			definiteBlockSize = 0;
     			if (hints.hasNext()) hint = hints.next();
     			else hint = 0; // even if we already used all hints, still continue and make sure only EMPTY cells follow.
-    			/*possibleBlockSize = 0;*/ 
     		}
-    		else if (matrix[i][j] == UNKNOWN) return true; //for now just accept it and dont do further research
+    		else if (matrix[i][j] == UNKNOWN) return true;
     	}
     	return true;
     }
@@ -284,7 +323,7 @@ public class Nonogram {
     	int[] vector = matrix[row];
     	if (vector[0] == UNKNOWN) {
     		//columnsToCheck.clear();
-    		firstPermutation(row);
+    		firstPermutationWithPredictions(row);
     		return true;
     	}
     	// First step: find the starting position of the rightmost block
