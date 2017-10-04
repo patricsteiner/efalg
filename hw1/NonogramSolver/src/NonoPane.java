@@ -69,6 +69,7 @@ public class NonoPane extends BorderPane {
 				else if (nonogram.get(i, j) == Nonogram.EMPTY) color = Color.DARKORCHID;
 				if (nonogram.predictions[i][j] == Nonogram.FILLED) color = Color.GRAY;
 				else if (nonogram.predictions[i][j] == Nonogram.EMPTY) color = Color.ORCHID;
+				if (nonogram.preprocessed[i][j] == Nonogram.FILLED) color = Color.DARKRED;
 				gc.setFill(color);
 				double x = j + gridWidth - nonogram.width;
 				double y = i + gridHeight - nonogram.height;

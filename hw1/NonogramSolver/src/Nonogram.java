@@ -1,6 +1,7 @@
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
@@ -11,6 +12,7 @@ public class Nonogram {
 	
 	protected final int height, width;
     protected int[][] matrix;
+    protected int[][] preprocessed;
     protected int[][] predictions;
     protected List<List<Integer>> rowHints;
     protected List<List<Integer>> colHints;
@@ -25,6 +27,7 @@ public class Nonogram {
     
     public final static int UNKNOWN = 0;
     public final static int FILLED = 1;
+    public final static int FIXED = 2;
     public  final static int EMPTY = -1;
     
     public int backtrackCounter = 0;
@@ -55,15 +58,18 @@ public class Nonogram {
         scanner.close();
         matrix = new int[height][];
         predictions = new int[height][];
+        preprocessed = new int[height][];
         for (int i = 0; i < height; i++) {
         	matrix[i] = new int[width];
         	predictions[i] = new int[width];
+        	preprocessed[i] = new int[width];
         }
     }
 
 	public boolean solve(int delay) throws InterruptedException {
 		stopped = false;
 		this.delay = delay;
+		preprocess();
 		return findSolution(0);
 	}
 	
@@ -147,6 +153,46 @@ public class Nonogram {
 		}
 	}
 	
+	public void preprocess() {
+//		for (List<Integer> hints : rowHints) Collections.reverse(hints);
+//		Collections.reverse(colHints);
+		
+		// rows
+		for (int i = 0; i < height; i++) {
+			int sumOfHints = rowHints.get(i).stream().mapToInt(Integer::valueOf).sum();
+			int minimalOccupiedSpace = sumOfHints + rowHints.get(i).size() - 1; // always 1 space between blocks
+			int pos = 0;
+			for (int k = 0; k < rowHints.get(i).size(); k++) {
+				pos = pos + rowHints.get(i).get(k) - 1;
+				int difference = width - minimalOccupiedSpace - rowHints.get(i).get(k);
+				System.out.println(difference);
+				if (difference < 0) {
+					for (int j = pos; j > pos + difference; j--) {
+						preprocessed[i][j] = FILLED;
+					}
+				}
+				pos += 2;
+			}
+		}
+		// same for cols
+		for (int j = 0; j < width; j++) {
+			int sumOfHints = colHints.get(j).stream().mapToInt(Integer::valueOf).sum();
+			int minimalOccupiedSpace = sumOfHints + colHints.get(j).size() - 1; // always 1 space between blocks
+			int pos = 0;
+			for (int k = 0; k < colHints.get(j).size(); k++) {
+				pos = pos + colHints.get(j).get(k) - 1;
+				int difference = height - minimalOccupiedSpace - colHints.get(j).get(k);
+				System.out.println(difference);
+				if (difference < 0) {
+					for (int i = pos; i > pos + difference; i--) {
+						preprocessed[i][j] = FILLED;
+					}
+				}
+				pos += 2;
+			}
+		}
+	}
+	
 	protected boolean findSolution(int row) throws InterruptedException {
     	if (stopped) return true;
     	//backtrackCounter++;
@@ -179,7 +225,7 @@ public class Nonogram {
 //        	}
         	if (delay > 0) Thread.sleep(delay);
         	//time = System.nanoTime();
-        	boolean allGood = matchesPrediction(row);// && checkCols();
+        	boolean allGood = matchesPrediction(row) && matchesPreprocessed(row);// && checkCols();
         	//time = System.nanoTime() - time;
         	//timeSpentChecking += time;
         	if (allGood) {
@@ -290,6 +336,15 @@ public class Nonogram {
     protected boolean matchesPrediction(int row) {
     	for (int j = 0; j < width; j++) {
     		if (predictions[row][j] != UNKNOWN && matrix[row][j] != predictions[row][j]) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
+    protected boolean matchesPreprocessed(int row) {
+    	for (int j = 0; j < width; j++) {
+    		if (preprocessed[row][j] != UNKNOWN && matrix[row][j] != preprocessed[row][j]) {
     			return false;
     		}
     	}

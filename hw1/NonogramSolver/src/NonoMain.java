@@ -25,7 +25,7 @@ public class NonoMain extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		nonogram = new Nonogram(new FileInputStream(new File("27x34.txt")));
+		nonogram = new Nonogram(new FileInputStream(new File("25x25.txt")));
 		NonoPane nonoPane = new NonoPane(nonogram);
 		nonoPane.setPrefWidth(700);
 		nonoPane.setPrefHeight(700);
