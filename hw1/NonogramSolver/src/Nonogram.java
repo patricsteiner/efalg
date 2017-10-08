@@ -1,39 +1,76 @@
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
+/**
+ * This class represents a Nonogram and provides methods to calculate solutions.
+ *
+ * @author Patric Steiner
+ */
 public class Nonogram {
 	
-	protected final int height, width;
-    protected int[][] matrix;
-    protected int[][] preprocessed;
-    protected int[][] predictions;
-    protected List<List<Integer>> rowHints;
-    protected List<List<Integer>> colHints;
+	/**
+	 * width and height of the matrix.
+	 */
+	private final int height, width;
+	
+	/**
+	 * This 2d array represents the current state of the Nonogram. 
+	 * Possible values can be UNKNOWN, FILLED or EMPTY.
+	 * While the algorithm is runnning, values in this matrix change and are not necessarily
+	 * true during the runtime of the algorithm (backtracking!)
+	 */
+    private int[][] matrix;
     
-    //protected List<Integer> columnsToCheck = new ArrayList<>();
+    /**
+     * A different 2d array with equal dimensions as matrix is used to store pre-processed values.
+     * This could technically be done in the matrix itself, but I decided to use a seperate array
+     * to have a cleaner and more general backtracking function.
+     */
+    private int[][] preprocessed;
     
-    protected int delay = 0;
+    /**
+     * A different 2d array with equal dimensions as matrix is used to predict values according
+     * to the current state of the solution.
+     */
+    private int[][] predictions;
     
-    protected boolean stopped;
+    /**
+     * All the row hints that we need to solve the nonogram. 
+     */
+    private List<List<Integer>> rowHints;
+
+	/**
+     * All the column hints that we need to solve the nonogram. 
+     */
+    private List<List<Integer>> colHints;
     
-    protected int rowCounter = 0; // used to indicate how many rows have been permuted already
+    /**
+     * For debugging purposes, a delay in ms can be set. if > 0, the algorithm will stop for the 
+     * given duration in each iteration and thus make the steps visible in the GUI.
+     */
+    private int delay = 0;
     
+    /**
+     * Indicates whether the algorithm has been stopped by the GUI.
+     */
+    private boolean stopped;
+    
+    /**
+     * used during runtime to indicate how many rows have been permuted already.
+     */
+    private int rowCounter = 0;
+    
+    /**
+     * Possible values for fields in the matrix.
+     */
     public final static int UNKNOWN = 0;
     public final static int FILLED = 1;
-    public final static int FIXED = 2;
     public  final static int EMPTY = -1;
-    
-    public int backtrackCounter = 0;
-    public int permutationCounter = 0;
-    public long timeSpentPermuting = 0;
-    public long timeSpentChecking = 0;
 
     public int getHeight() {
 		return height;
@@ -42,7 +79,57 @@ public class Nonogram {
 	public int getWidth() {
 		return width;
 	}
+	
+	/**
+	 * Gets the rowHints. Attention: not cloned, so not safe to edit! but also not needed in this context.
+	 * @return rowHints
+	 */
+    public List<List<Integer>> getRowHints() {
+		return rowHints;
+	}
 
+	/**
+	 * Gets the colHints. Attention: not cloned, so not safe to edit! but also not needed in this context.
+	 * @return rowHints
+	 */
+	public List<List<Integer>> getColHints() {
+		return colHints;
+	}
+
+	/**
+	 * Get a value from the matrix.
+	 * @param i row
+	 * @param j column
+	 * @return UNKNOWN, FILLED or EMPTY
+	 */
+	public int get(int i, int j) {
+		return matrix[i][j];
+	}
+	
+	/**
+	 * Get a value from the predictions.
+	 * @param i row
+	 * @param j column
+	 * @return UNKNOWN, FILLED or EMPTY
+	 */
+	public int getPrediction(int i, int j) {
+		return predictions[i][j];
+	}
+	
+	/**
+	 * Get a value from the preprocessed values.
+	 * @param i row
+	 * @param j column
+	 * @return UNKNOWN, FILLED or EMPTY
+	 */
+	public int getPreprocessed(int i, int j) {
+		return preprocessed[i][j];
+	}
+	
+	/**
+	 * Constructor, taking an InputStream containing the Nonogram info.
+	 * @param in Properly formated InputStream
+	 */
 	public Nonogram(InputStream in) {
         Scanner scanner = new Scanner(in);
         height = scanner.nextInt();
@@ -51,11 +138,13 @@ public class Nonogram {
         rowHints = new ArrayList<>(height);
         colHints = new ArrayList<>(width);
         List<List<Integer>> listToAddThings = rowHints;
+        // read all the hints and store them
         for (int i = 0; i < height + width; i++) {
             if (i >= height) listToAddThings = colHints;
             listToAddThings.add(Arrays.stream(scanner.nextLine().split("\\s+")).mapToInt(Integer::parseInt).boxed().collect(Collectors.toList()));
         }
         scanner.close();
+        // initialize all the arrays
         matrix = new int[height][];
         predictions = new int[height][];
         preprocessed = new int[height][];
@@ -66,40 +155,35 @@ public class Nonogram {
         }
     }
 
+	/**
+	 * Starts solving the Nonogram.
+	 * @param delay for debugging purposes, the algorithm waits for this many ms between each iteration
+	 * (useful to track the algorithm on the GUI).
+	 * @return true if solved, false otherwise.
+	 * @throws InterruptedException
+	 */
 	public boolean solve(int delay) throws InterruptedException {
 		stopped = false;
 		this.delay = delay;
+		// optional: preprocess the Nonogram, finding some cells that are filled for sure
+		// and thus making the backtracking process afterwards faster.
 		preprocess();
-		return findSolution(0);
+		return findSolution(0); // start at row 0
 	}
 	
+	/**
+	 * Can be called from the GUI to stop the algorithm.
+	 */
 	public void stopSolving() {
 		stopped = true;
 	}
 	
-	/*protected int[] getRow(int n) {
-		return matrix[n];
-	}
-	
-	protected int[] getCol(int n) {
-		/*int[] col = new int[width];
-		for (int i = 0; i < height; i++) {
-			col[i] = matrix[i][n];
-		}
-		return col;
-		return IntStream.range(0, height).map(i -> matrix[i][n]).toArray();
-	}*/
-	
-	public int get(int i, int j) {
-		return matrix[i][j];
-	}
-	
-	/*public void set(int i, int j, int val) {
-		matrix[i][j] = val;
-	}*/
-
-	// make first possible permutation. later needs to consider current "fixed" cells.
-	protected void firstPermutation(int i) {
+	/**
+	 * Creates the first possible permutation for given row.
+	 * First possible permutation means, all blocks given by hints left-aligned.
+	 * @param i row
+	 */
+	private void firstPermutation(int i) {
 		int j = 0;
     	for (int hint : rowHints.get(i)) {
     		for (int k = 0; k < hint; k++) {
@@ -110,16 +194,15 @@ public class Nonogram {
     	while (j < width) matrix[i][j++] = EMPTY;
 	}
 	
-	protected boolean shiftRight(int row) {
-		if (matrix[row][width-1] == FILLED) return false;
-		for (int j = width - 1; j > 0; j--) {
-			matrix[row][j] = matrix[row][j-1];
-			matrix[row][j-1] = EMPTY;
-		}
-		return true;
-	}
-	
-	protected void firstPermutationWithPredictions(int row) {
+	/**
+	 * Same as firstPermutation(row), but also makes sure that the leftmost block is moved
+	 * as far to the right as possible, considering the information (predictions) we already have.
+	 * The reason for doing this: For each unit the first block can be moved to the right,
+	 * we can skip a sizeable amount of possible permutations without further trying, and just 
+	 * moving on to the next.
+	 * @param i row
+	 */
+	private void firstPermutationWithPredictions(int row) {
 		firstPermutation(row);
 		int firstBlockSize = rowHints.get(row).get(0);
 		if (firstBlockSize == 0 || rowHints.get(row).size() < 2) return;
@@ -129,11 +212,11 @@ public class Nonogram {
 			sumOfAllBlocksButFirst += rowHints.get(row).get(x);
 		}
 		int filled = 0;
-		int unknown = 0;
+		//int unknown = 0;
 		int p = width - 1;
 		while (filled <= sumOfAllBlocksButFirst) {
 			if (predictions[row][p] == FILLED) filled++;
-			else if (predictions[row][p] == UNKNOWN) unknown++;
+			//else if (predictions[row][p] == UNKNOWN) unknown++;
 			if (--p < 0) return;
 		}
 		p++; // last cell of first block shall be placed on p
@@ -145,19 +228,23 @@ public class Nonogram {
 		}
 	}
 	
-	// reset row to all 0s. later needs to reset to a state where all "fixed" cells are set.
-	protected void resetRow(int i) {
+	/**
+	 * Resets a row in the matrix and the prediction-matrix to UNKNOWN.
+	 * @param i row
+	 */
+	private void resetRow(int i) {
 		for (int j = 0; j < width; j++) {
 			matrix[i][j] = UNKNOWN;
 			predictions[i][j] = UNKNOWN;
 		}
 	}
 	
-	public void preprocess() {
-//		for (List<Integer> hints : rowHints) Collections.reverse(hints);
-//		Collections.reverse(colHints);
-		
-		// rows
+	/**
+	 * Whenever the width/height of the matrix minus the minimum required space of all hints (blocks + spaces)
+	 * is bigger than any of the hints: at least a part of this hint can definitely be set on the board.
+	 */
+	private void preprocess() {
+		// do the whole process for the rows
 		for (int i = 0; i < height; i++) {
 			int sumOfHints = rowHints.get(i).stream().mapToInt(Integer::valueOf).sum();
 			int minimalOccupiedSpace = sumOfHints + rowHints.get(i).size() - 1; // always 1 space between blocks
@@ -165,16 +252,16 @@ public class Nonogram {
 			for (int k = 0; k < rowHints.get(i).size(); k++) {
 				pos = pos + rowHints.get(i).get(k) - 1;
 				int difference = width - minimalOccupiedSpace - rowHints.get(i).get(k);
-				System.out.println(difference);
+				// if the difference is < 0: we can certainly fill a part of the matrix!
 				if (difference < 0) {
 					for (int j = pos; j > pos + difference; j--) {
 						preprocessed[i][j] = FILLED;
 					}
 				}
-				pos += 2;
+				pos += 2; // +2 because there is at least 1 space in between
 			}
 		}
-		// same for cols
+		// now repeat the same for the columns
 		for (int j = 0; j < width; j++) {
 			int sumOfHints = colHints.get(j).stream().mapToInt(Integer::valueOf).sum();
 			int minimalOccupiedSpace = sumOfHints + colHints.get(j).size() - 1; // always 1 space between blocks
@@ -193,120 +280,44 @@ public class Nonogram {
 		}
 	}
 	
-	protected boolean findSolution(int row) throws InterruptedException {
+	/**
+	 * Uses backtracking to find a solution to the Nonogram.
+	 * @param row start at 0 when first calling the function.
+	 * @return true if a solution was found or if the algorithm was stopped.
+	 * @throws InterruptedException
+	 */
+	private boolean findSolution(int row) throws InterruptedException {
     	if (stopped) return true;
-    	//backtrackCounter++;
-    	//System.out.println(timeSpentPermuting/1000000 + " vs checking: " + timeSpentChecking/1000000);
     	
-    	//if (row >= height /*|| rowCounter > height*/) return false;
-        
-        if (rowCounter++ == height/* && isSolved()*/) {
+        if (rowCounter++ == height) {
+        	System.err.println("DONE :D");
         	System.out.println(this);
-        	System.out.println("DONE");
         	return true;
         }
         
-    	//long time = System.nanoTime();
+        // predict as much as possible for the next row, given the current state.
     	makePrediction(row);
-
-    	boolean nextPermutation = nextPermutation(row);
-//    	long permutationCounter = 1;
     	
-    	//time = System.nanoTime() - time;
-    	//timeSpentPermuting += time;
-
-        while (nextPermutation) {
-//        	permutationCounter++;
-//        	System.out.println(permutationCounter);
-//        	if (permutationCounter > 10000000000L) {
-//        		firstPermutation(row);
-//        		shiftRight(row);
-//        		permutationCounter = 1;
-//        	}
+    	// for all possible next solutions
+        while (nextPermutation(row)) {
         	if (delay > 0) Thread.sleep(delay);
-        	//time = System.nanoTime();
-        	boolean allGood = matchesPrediction(row) && matchesPreprocessed(row);// && checkCols();
-        	//time = System.nanoTime() - time;
-        	//timeSpentChecking += time;
-        	if (allGood) {
+        	// make sure the calculated permutation is valid. If so, recursively call this function again with the next row.
+        	if (matchesPrediction(row) && matchesPreprocessed(row)) {
         		if (findSolution(row + 1)) return true;
         	}
-        	//time = System.nanoTime();
-        	nextPermutation = nextPermutation(row);
-        	
-        	//time = System.nanoTime() - time;
-        	//timeSpentPermuting += time;
         }
+        // if no of the solutions are valid: reset this row and backtrack.
         resetRow(row);
         rowCounter--;
         return false;
     }
-
-    /*public boolean isSolved() {
-        /*for (int i = 0; i < height; i++) {
-            List<Integer> blockLengths = getBlockLenghts(getRow(i));
-            for (int j = 0; j < rowHints.get(i).size(); j++) {
-                if (rowHints.get(i).get(j) != blockLengths.get(j)) return false;
-            }
-        }
-        for (int i = 0; i < width; i++) {
-            List<Integer> blockLengths = getBlockLenghts(getCol(i));
-            for (int j = 0; j < colHints.get(i).size(); j++) {            	
-                if (colHints.get(i).size() != blockLengths.size() || colHints.get(i).get(j) != blockLengths.get(j)) 
-                	return false;
-            }
-        }
-        return true;
-    }*/
-
-    // XXX Make a compareBlckLEngths fucntion isntead to save memory (no array return)
-    /*protected List<Integer> getBlockLenghts(int[] vector) {
-        List<Integer> blockLengths = new ArrayList<>();
-        int blockLength = 0;
-        for (int i = 0; i < vector.length; i++) {
-            if (vector[i] == 1) blockLength++;
-            else if (blockLength > 0){
-                blockLengths.add(blockLength);
-                blockLength = 0;
-            }
-        }
-        if (blockLength > 0)
-            blockLengths.add(blockLength);
-        if (blockLengths.size() == 0) blockLengths.add(0);
-        return blockLengths;
-    }*/
-
-    // only need to check cols, because rows will never be invalid due to permutation function
-    // ein array mit allem möglichen (max) blocklängen machen. wenn sich das dann überschneidet mit den hints, ist ok. abbruch nur, wenn effektiv ein fehler schon erkannt wird.
-    protected boolean checkCols() {
-		for (int j = 0; j < width; j++) {
-			if (!checkCol(j)) return false;
-		}
-    	return true;
-    }
     
-    protected boolean checkCol(int j) {
-    	Iterator<Integer> hints = colHints.get(j).iterator();
-    	int definiteBlockSize = 0;
-    	int hint = hints.next();
-    	for (int i = 0; i < height; i++) {
-    		if (matrix[i][j] == FILLED) { 
-    			definiteBlockSize++;
-    			if (definiteBlockSize > hint) return false;
-    		}
-    		else if (matrix[i][j] == EMPTY && definiteBlockSize > 0) {
-    			if (definiteBlockSize != hint) return false;
-    			definiteBlockSize = 0;
-    			if (hints.hasNext()) hint = hints.next();
-    			else hint = 0; // even if we already used all hints, still continue and make sure only EMPTY cells follow.
-    		}
-    		else if (matrix[i][j] == UNKNOWN) return true;
-    	}
-    	return true;
-    }
-    
-    // assumes everything is correct down to row, so nothing is actually checked for correctness.
-    protected void makePrediction(int row) {
+	/**
+	 * Predicts as many values (FILLED/EMPTY) for the given row as possible, using the data that we already have.
+	 * Assumes everything is correct down to row, so there is no need to actually check values for correctness.
+	 * @param row
+	 */
+    private void makePrediction(int row) {
     	if (row == 0) return;
     	for (int j = 0; j < width; j++) {
 	    	Iterator<Integer> hints = colHints.get(j).iterator();
@@ -321,19 +332,27 @@ public class Nonogram {
 	    			blockSize = 0;
 	    		}
 	    	}
+	    	// if a block already started and is not completed: this field certainly needs to be FILLED
     		if (blockSize > 0 && blockSize < hint) {
     			predictions[row][j] = FILLED;
     		}
+    		// if the block is exactly completed: next field is certainly EMTPY
     		else if (blockSize == hint) {
     			predictions[row][j] = EMPTY;
     		}
+    		// otherwise we cannot make a prediction
     		else {
     			predictions[row][j] = UNKNOWN;
     		}
     	}
     }
     
-    protected boolean matchesPrediction(int row) {
+    /**
+     * Checks if the matrix at given row matches the prediction.
+     * @param row
+     * @return true if it matches, false otherwise.
+     */
+    private boolean matchesPrediction(int row) {
     	for (int j = 0; j < width; j++) {
     		if (predictions[row][j] != UNKNOWN && matrix[row][j] != predictions[row][j]) {
     			return false;
@@ -342,7 +361,12 @@ public class Nonogram {
     	return true;
     }
     
-    protected boolean matchesPreprocessed(int row) {
+    /**
+     * Checks if the matrix at given row matches the preprocessed values.
+     * @param row
+     * @return true if it matches, false otherwise.
+     */
+    private boolean matchesPreprocessed(int row) {
     	for (int j = 0; j < width; j++) {
     		if (preprocessed[row][j] != UNKNOWN && matrix[row][j] != preprocessed[row][j]) {
     			return false;
@@ -351,34 +375,18 @@ public class Nonogram {
     	return true;
     }
     
-    /*protected void setColumnsToCheck(int... cols) {
-    	columnsToCheck.clear();
-    	for (int col : cols) columnsToCheck.add(col);
-    }*/
-    
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (int[] row : matrix) {
-            for (int i : row) sb.append(i == UNKNOWN ? "?" : i == EMPTY ? "0" : "1");
-            sb.append("\n");
-        }
-        return sb.toString();
-    }
-    
     /**
      * Computes the next permutation of the given row of the matrix.
      * Blocks will be maintained for all permutations, space between blocks is always at least 1.
-     * @param row row number of the matrix
+     * @param row number of the matrix
      * @return true if another permutation was found, false otherwise
      */
-    protected boolean nextPermutation(int row) {
+    private boolean nextPermutation(int row) {
     	int rightMostBlockSize = rowHints.get(row).get(rowHints.get(row).size() - 1);
     	if (rightMostBlockSize == 0) return false;
     	int[] vector = matrix[row];
     	if (vector[0] == UNKNOWN) {
-    		//columnsToCheck.clear();
-    		firstPermutationWithPredictions(row);
+    		firstPermutationWithPredictions(row); // could be changed to firstPermutation(row) if no predictions shall be made.
     		return true;
     	}
     	// First step: find the starting position of the rightmost block
@@ -392,7 +400,6 @@ public class Nonogram {
     		// move the last block to the right by 1 unit --> this is the next permutation
     		vector[rightMostBlockPosition] = EMPTY;
     		vector[rightMostBlockPosition + rightMostBlockSize] = FILLED;
-    		//setColumnsToCheck(rightMostBlockPosition, rightMostBlockPosition + rightMostBlockSize);
     		return true;
     	}
     	// If there is no space after the rightmost block: 
@@ -415,7 +422,6 @@ public class Nonogram {
     	}
     	vector[i] = EMPTY; // "move" the found block 1 unit to right
     	vector[i + filledCells] = FILLED;
-    	//setColumnsToCheck(i, i + filledCells);
     	// move all the other blocks as far to the left as possible (zeros is used as offset basically)
     	// the +2 / -2 is there because starting from the rightmost side of the found block (i + ones), 
     	// we don't just need to go 1 unit to the right, but 2, since there is a space between each block.
@@ -423,10 +429,72 @@ public class Nonogram {
     		if (j != j + emptyCells - 2) {
 	    		vector[j] = vector[j + emptyCells - 2];
 	    		vector[j + emptyCells - 2] = EMPTY;
-	    		//columnsToCheck.add(j);
-	    		//columnsToCheck.add(j + emptyCells - 2);
     		}
     	}
     	return true;
     }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (int[] row : matrix) {
+            for (int i : row) sb.append(i == UNKNOWN ? "?" : i == EMPTY ? "0" : "1");
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
+    
+    // the following functions could potentially be used for different apporache:
+//  public boolean isSolved() {
+//  for (int i = 0; i < height; i++) {
+//      List<Integer> blockLengths = getBlockLenghts(getRow(i));
+//      for (int j = 0; j < rowHints.get(i).size(); j++) {
+//          if (rowHints.get(i).get(j) != blockLengths.get(j)) return false;
+//      }
+//  }
+//  for (int i = 0; i < width; i++) {
+//      List<Integer> blockLengths = getBlockLenghts(getCol(i));
+//      for (int j = 0; j < colHints.get(i).size(); j++) {            	
+//          if (colHints.get(i).size() != blockLengths.size() || colHints.get(i).get(j) != blockLengths.get(j)) 
+//          	return false;
+//      }
+//  }
+//  return true;
+//}
+//
+//private boolean checkCols() {
+//	for (int j = 0; j < width; j++) {
+//		if (!checkCol(j)) return false;
+//	}
+//	return true;
+//}
+//
+//private boolean checkCol(int j) {
+//	Iterator<Integer> hints = colHints.get(j).iterator();
+//	int definiteBlockSize = 0;
+//	int hint = hints.next();
+//	for (int i = 0; i < height; i++) {
+//		if (matrix[i][j] == FILLED) { 
+//			definiteBlockSize++;
+//			if (definiteBlockSize > hint) return false;
+//		}
+//		else if (matrix[i][j] == EMPTY && definiteBlockSize > 0) {
+//			if (definiteBlockSize != hint) return false;
+//			definiteBlockSize = 0;
+//			if (hints.hasNext()) hint = hints.next();
+//			else hint = 0; // even if we already used all hints, still continue and make sure only EMPTY cells follow.
+//		}
+//		else if (matrix[i][j] == UNKNOWN) return true;
+//	}
+//	return true;
+//}
+//	private boolean shiftRight(int row) {
+//	if (matrix[row][width-1] == FILLED) return false;
+//	for (int j = width - 1; j > 0; j--) {
+//		matrix[row][j] = matrix[row][j-1];
+//		matrix[row][j-1] = EMPTY;
+//	}
+//	return true;
+//}
+
 }

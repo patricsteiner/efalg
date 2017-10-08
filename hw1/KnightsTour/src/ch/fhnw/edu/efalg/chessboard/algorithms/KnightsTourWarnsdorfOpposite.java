@@ -5,10 +5,8 @@ import ch.fhnw.edu.efalg.chessboard.Position;
 import java.util.*;
 
 /**
- * More sophisticated implementation of the algorithm to find a knight's tour using backtracking.
- * This algorithm uses the heuristics given by Warnsdorf in the opposite way! Instead of just choosing any possible move, this algorithm
- * always chooses the move with the most possible next moves first, which is not a smart idea, this is mostly for testing purposes.
- *
+ * Only used for experimentation, this alogrithm is not efficient, it does the opposite of the warnsdorf rule!
+ * 
  * @author Patric Steiner
  */
 public final class KnightsTourWarnsdorfOpposite extends KnightsTourNoHeuristic {

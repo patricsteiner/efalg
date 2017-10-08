@@ -1,8 +1,6 @@
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
-import com.sun.org.apache.xerces.internal.util.SynchronizedSymbolTable;
+import java.io.PrintWriter;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -14,18 +12,44 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * Main class and starting point of the application. 
+ * This application uses 2 seperate threads. One for updating the GUI and one for running the algorithm.
+ * 
+ * @author Patric Steiner
+ */
 public class NonoMain extends Application {
 	
-	protected Nonogram nonogram;
-	protected long start;
+	private final static String FILENAME_IN = "Nonogramm.txt";
+	private final static String FILENAME_OUT = "out.txt";
+	private final static int GUI_UPDATE_INTERVAL = 1000; // in milliseconds
+	// if true, shows different colors in the GUI depending how the block was determined.
+	public final static boolean DEBUG_COLORS = true;
 	
-	public static void main(String[] args) throws FileNotFoundException {
+	/**
+	 * The nonogram that is being processed by the algorithm.
+	 */
+	private Nonogram nonogram;
+	
+	/**
+	 * Time when the algorithm was started, used to measure execution time.
+	 */
+	private long start;
+	
+	/**
+	 * Entry point of the application. 
+	 */
+	public static void main(String[] args) {
 		launch(args);
 	}
 
+	/**
+	 * Is automatically called, sets up the GUI and the algorithm thread and runs them both.
+	 * Exceptions are not handled.
+	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		nonogram = new Nonogram(new FileInputStream(new File("25x25.txt")));
+		nonogram = new Nonogram(new FileInputStream(new File(FILENAME_IN)));
 		NonoPane nonoPane = new NonoPane(nonogram);
 		nonoPane.setPrefWidth(700);
 		nonoPane.setPrefHeight(700);
@@ -33,6 +57,8 @@ public class NonoMain extends Application {
 		primaryStage.setScene(s);
 		nonoPane.setVisible(true);
 		primaryStage.show();
+		
+		// set up a task for solving the algorithm.
 		Task<Boolean> solverTask = new Task<Boolean>() {
 			@Override
 			protected Boolean call() throws Exception {
@@ -41,28 +67,43 @@ public class NonoMain extends Application {
 			}
 		};
 		solverTask.setOnSucceeded(e -> {
-			long ns = System.nanoTime() - start;
-			String time =  ns/1000000 + "ms";
+			String elapsedTime =  (System.nanoTime() - start)/1000000 + "ms"; // calculating the elapsed time in ms.
 			nonoPane.draw();
+			// check if a solution was found and output a message as well as the elapsed time.
 			if (solverTask.getValue()) {
-				new Alert(AlertType.INFORMATION, "Yay, did it. Only took " + time).showAndWait();
+				new Alert(AlertType.INFORMATION, "Yay, did it. Only took " + elapsedTime).showAndWait();
+				
+				// write the solution to a file.
+				try {
+					PrintWriter p;
+					p = new PrintWriter(new File(FILENAME_OUT));
+					p.print(nonogram.toString());
+					p.flush();
+					p.close();
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
 			}
-			else {
-				new Alert(AlertType.ERROR, "Not gonna happen. You wasted " + time + " of your life.").showAndWait();
+			else { // no solution was found
+				new Alert(AlertType.ERROR, "Not gonna happen. You wasted " + elapsedTime + " of your life.").showAndWait();
 			}
 		});
-		solverTask.setOnFailed(e -> System.err.println("Solver Task failed!"));
+		solverTask.setOnFailed(e -> System.err.println("Solver Task failed!")); // errors are not handled.
 		new Thread(solverTask).start();
 		
-		Timeline guiUpdater = new Timeline(new KeyFrame(Duration.millis(100), e -> nonoPane.draw()));
+		// set the interval for updating the GUI
+		Timeline guiUpdater = new Timeline(new KeyFrame(Duration.millis(GUI_UPDATE_INTERVAL), e -> nonoPane.draw()));
 		guiUpdater.setCycleCount(Timeline.INDEFINITE);
 		guiUpdater.play();
 	}
 	
+	/**
+	 * Makes sure the algorithm stops when the window is closed.
+	 */
 	@Override
 	public void stop() throws Exception {
 		nonogram.stopSolving();
-		System.out.println(nonogram);
+		System.out.println(nonogram); // print the current state of the nonogram.
 		super.stop();
 	}
 }
