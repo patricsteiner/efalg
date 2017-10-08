@@ -20,11 +20,16 @@ import javafx.util.Duration;
  */
 public class NonoMain extends Application {
 	
-	private final static String FILENAME_IN = "Nonogramm.txt";
+	// ######################################################
+	// SET THESE VALUES NEFORE RUNNING 
+	
+	private final static String FILENAME_IN = "rabbit.txt";
 	private final static String FILENAME_OUT = "out.txt";
-	private final static int GUI_UPDATE_INTERVAL = 1000; // in milliseconds
-	// if true, shows different colors in the GUI depending how the block was determined.
-	public final static boolean DEBUG_COLORS = true;
+	private final static int GUI_UPDATE_INTERVAL = 100; // in milliseconds
+	public final static boolean DEBUG_COLORS = true; // if true, shows different colors in the GUI depending how the block was determined.
+	private final static int DELAY = 0; // amount of ms to wait between every iteration (useful to see progress in GUI)
+	
+	// ######################################################
 	
 	/**
 	 * The nonogram that is being processed by the algorithm.
@@ -63,7 +68,7 @@ public class NonoMain extends Application {
 			@Override
 			protected Boolean call() throws Exception {
 				start = System.nanoTime();
-				return nonogram.solve(0);
+				return nonogram.solve(DELAY);
 			}
 		};
 		solverTask.setOnSucceeded(e -> {

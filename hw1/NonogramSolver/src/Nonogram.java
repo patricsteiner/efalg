@@ -269,7 +269,6 @@ public class Nonogram {
 			for (int k = 0; k < colHints.get(j).size(); k++) {
 				pos = pos + colHints.get(j).get(k) - 1;
 				int difference = height - minimalOccupiedSpace - colHints.get(j).get(k);
-				System.out.println(difference);
 				if (difference < 0) {
 					for (int i = pos; i > pos + difference; i--) {
 						preprocessed[i][j] = FILLED;
@@ -290,7 +289,7 @@ public class Nonogram {
     	if (stopped) return true;
     	
         if (rowCounter++ == height) {
-        	System.err.println("DONE :D");
+        	System.out.println("DONE :D");
         	System.out.println(this);
         	return true;
         }
@@ -324,10 +323,10 @@ public class Nonogram {
 	    	int blockSize = 0;
 	    	int hint = hints.next();
 	    	for (int i = 0; i < row; i++) {
-	    		if (matrix[i][j] == FILLED) {
+	    		if (matrix[i][j] == FILLED || preprocessed[i][j] == FILLED) {
 	    			blockSize++;
 	    		}
-	    		else if (matrix[i][j] == EMPTY) {
+	    		else if (matrix[i][j] == EMPTY || preprocessed[i][j] == EMPTY) {
 	    			if (blockSize > 0) hint = hints.hasNext() ? hints.next() : 0;
 	    			blockSize = 0;
 	    		}
