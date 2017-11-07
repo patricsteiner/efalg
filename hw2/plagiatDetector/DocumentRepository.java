@@ -1,26 +1,24 @@
 package plagiatDetector;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 public class DocumentRepository {
 	
-	private Collection<Document> documents;
+	private List<Document> documents;
 	
 	public DocumentRepository() {
-		documents = new HashSet<>();
+		documents = new ArrayList<>();
 	}
 	
 	public void add(Document document) {
 		documents.add(document);
 	}
 	
-	public boolean contains(Document document) {
-		return documents.contains(document);
-	}
-	
-	public Collection<Document> getAll() {
-		return Collections.unmodifiableCollection(documents);
+	public List<Document> getAll() {
+		return Collections.unmodifiableList(documents);
 	}
 }

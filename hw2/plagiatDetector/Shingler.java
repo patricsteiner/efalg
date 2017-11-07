@@ -2,29 +2,30 @@ package plagiatDetector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class Shingler {
 	
-	public final int k;
+	private final int tokensPerShingle;
 	private ShingleRepository shingleRepository;
 	
-	public Shingler(int k, ShingleRepository shingleRepository) {
-		if (k < 1) throw new IllegalArgumentException("k must be > 0");
-		this.k = k;
+	public Shingler(int tokensPerShingle, ShingleRepository shingleRepository) {
+		if (tokensPerShingle < 1) throw new IllegalArgumentException("tokensPerShingle must be > 0");
+		this.tokensPerShingle = tokensPerShingle;
 		this.shingleRepository = shingleRepository;
 	}
 	
-	public Collection<Integer> makeShinglesAndAddToRepository(Document document) {
-		Collection<Integer> shingleIndices = new ArrayList<>();
-		for (int i = 0; i < document.getTokens().size() - k; i++) {
-			String tokens[] = new String[k];
-			for (int j = 0; j < k; j++) {
+	public HashSet<Integer> makeShinglesAndAddToRepository(Document document) {
+		HashSet<Integer> shingleIds = new HashSet<>();
+		for (int i = 0; i < document.getTokens().size() - tokensPerShingle; i++) {
+			String tokens[] = new String[tokensPerShingle];
+			for (int j = 0; j < tokensPerShingle; j++) {
 				tokens[j] = document.getTokens().get(i + j);
 			}
-			shingleIndices.add(shingleRepository.add(new Shingle(tokens)));
+			shingleIds.add(shingleRepository.add(new Shingle(tokens)));
 		}
-		return shingleIndices;
+		return shingleIds;
 	}
 }

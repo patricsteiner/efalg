@@ -7,23 +7,23 @@ import java.util.Map;
 public class ShingleRepository {
 	
 	private ArrayList<Shingle> shingles;
-	private Map<Shingle, Integer> shingleIndices;
+	private Map<Shingle, Integer> shingleIds;
 	
 	public ShingleRepository() {
 		shingles = new ArrayList<>();
-		shingleIndices = new HashMap<>();
+		shingleIds = new HashMap<>();
 	}
 	
 	public int add(Shingle shingle) {
-		if (shingleIndices.containsKey(shingle)) return shingleIndices.get(shingle);
+		if (shingleIds.containsKey(shingle)) return shingleIds.get(shingle);
 		int currentIndex = shingles.size();
 		shingles.add(shingle);
-		shingleIndices.put(shingle, currentIndex);
+		shingleIds.put(shingle, currentIndex);
 		return currentIndex;
 	}
 	
 	public boolean contains(Shingle shingle) {
-		return shingleIndices.containsKey(shingle);
+		return shingleIds.containsKey(shingle);
 	}
 	
 	public Shingle findByIndex(int index) {
