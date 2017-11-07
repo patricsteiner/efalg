@@ -29,7 +29,6 @@ public class PlagiatDetectorMain extends Application {
 	
 	@Override
 	public void stop() throws Exception {
-		
 		super.stop();
 	}
 }

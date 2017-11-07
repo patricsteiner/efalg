@@ -5,6 +5,6 @@ import java.util.List;
 
 public class Tokenizer {
 	public List<String> tokenize(Document document) {
-		return Arrays.asList(document.getRawContent().split("[ \\n\\r\\n\\t]+"));
+		return Arrays.asList(document.getProcessedContent().split("[ \\n\\r\\n\\t]+"));
 	}
 }

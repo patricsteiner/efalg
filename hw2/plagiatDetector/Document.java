@@ -1,7 +1,5 @@
 package plagiatDetector;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -14,7 +12,9 @@ public class Document {
 	private HashSet<Integer> shingleIds; // using HashSet for O(1) read
 	private Tokenizer tokenizer;
 	private Shingler shingler;
+	private Preprocessor preprocessor;
 	private String rawContent;
+	private String processedContent;
 	
 	public Document(String name, String rawContent) {
 		this.name = name;
@@ -29,6 +29,10 @@ public class Document {
 		return rawContent;
 	}
 	
+	public String getProcessedContent() {
+		return processedContent;
+	}
+	
 	public void setTokenizer(Tokenizer tokenizer) {
 		this.tokenizer = tokenizer;
 	}
@@ -37,7 +41,12 @@ public class Document {
 		this.shingler = shingler;
 	}
 	
+	public void setPreprocessor(Preprocessor preprocessor) {
+		this.preprocessor = preprocessor;
+	}
+	
 	public void prepare() {
+		processedContent = preprocessor.preprocess(this);
 		tokens = tokenizer.tokenize(this);
 		shingleIds = shingler.makeShinglesAndAddToRepository(this);
 	}

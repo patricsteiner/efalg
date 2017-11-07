@@ -45,6 +45,7 @@ public class PlagiatDetectorPane extends BorderPane {
 		
 		documents.forEach(plagiatDetector::addDocument);
 		
+		
 		Task detectorTask = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
@@ -56,16 +57,16 @@ public class PlagiatDetectorPane extends BorderPane {
 						Document d2 = documents.get(j);
 						double similarity = plagiatDetector.similarity(d1, d2);
 						similarityMatrix[i][j] = similarity;
-						System.out.println(d1.getName() + " vs " + d2.getName() + ": " + similarity);
 					}
 				}
-				documents.forEach(d -> System.out.println(d.getName() + ": " + d.getShingleIndices().stream().sorted().map(String::valueOf).reduce((i, i2) -> i + " " + i2)));
 				draw();
 				return null;
 			}
 		};
-		
 		new Thread(detectorTask).start();	
+		
+		//documents.forEach(d -> System.out.println(d.getName() + ": " + d.getShingleIndices().stream().sorted().map(String::valueOf).reduce((i, i2) -> i + " " + i2)));
+		documents.forEach(d -> System.out.println(d.getProcessedContent()));
 	}
 	
 	/**
@@ -98,14 +99,17 @@ public class PlagiatDetectorPane extends BorderPane {
 		// draw similarities and fill rectangles
 		for (int i = 0; i < similarityMatrix.length; i++) {
 			for (int j = 0; j < similarityMatrix.length; j++) {
-				System.out.print(similarityMatrix[i][j]);
-				gc.setFill(Color.gray((1-similarityMatrix[i][j]/2)));
+				Color color = Color.BLACK;
+				color = Color.gray((1-similarityMatrix[i][j]/2));
+				if (similarityMatrix[i][j] > 1/2d) color = Color.YELLOW;
+				if (similarityMatrix[i][j] > 3/4d) color = Color.RED;
+				if (similarityMatrix[i][j] < 1/5d) color = Color.GREEN;
+				gc.setFill(color);
 				gc.fillRect(scaleX(i+1), scaleY(j+1), scaleX(i+2), scaleY(j+2));
 				gc.setFill(Color.BLACK);
 				String similarity = String.format("%.0f%%", similarityMatrix[i][j]*100);
 				gc.fillText(similarity, scaleX(i+1.5), scaleY(j+1.5));
 			}
-			System.out.println();
 		}
 		// draw grid
 		for (int i = 0; i < gridSize; i++) {
@@ -113,12 +117,24 @@ public class PlagiatDetectorPane extends BorderPane {
 			gc.strokeLine(scaleX(i), 0, scaleX(i), scaleY(gridSize));
 		}
 		// draw document names
-		gc.setFont(new Font("Arial", getWidth() >= getHeight() ? scaleY(.2) : scaleX(.15)));
+		gc.setFont(new Font("Arial", getWidth() >= getHeight() ? scaleY(.15) : scaleX(.1)));
 		for (int i = 0; i < plagiatDetector.getAllDocuments().size(); i++) {
 			String documentName = plagiatDetector.getAllDocuments().get(i).getName();
+			documentName = makeStringMultiline(documentName, 15);
 			gc.fillText(documentName, scaleX(.5), scaleY(i+1.5));
 			gc.fillText(documentName, scaleX(i + 1.5), scaleY(.5));
 		}
+	}
+	
+	private String makeStringMultiline(String string, int maxLineLength) {
+		if (string.length() <= maxLineLength) return string;
+		StringBuilder stringBuilder = new StringBuilder(string);
+		int index = maxLineLength;
+		while (index < stringBuilder.length()) {
+			stringBuilder.insert(index, "\n");
+			index += maxLineLength;
+		}
+		return stringBuilder.toString();
 	}
 	
 }

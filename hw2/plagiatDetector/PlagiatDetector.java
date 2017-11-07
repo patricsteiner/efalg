@@ -1,6 +1,5 @@
 package plagiatDetector;
 
-import java.util.Collection;
 import java.util.List;
 
 public class PlagiatDetector {
@@ -9,18 +8,21 @@ public class PlagiatDetector {
 	private ShingleRepository shingleRepository;
 	private Shingler shingler;
 	private Tokenizer tokenizer;
-	private final static int TOKENS_PER_SHINGLE = 3;
+	private Preprocessor preprocessor;
+	private final static int TOKENS_PER_SHINGLE = 7;
 	
 	public PlagiatDetector() {
 		documentRepository = new DocumentRepository();
 		shingleRepository = new ShingleRepository();
 		shingler = new Shingler(TOKENS_PER_SHINGLE, shingleRepository);
 		tokenizer = new Tokenizer();
+		preprocessor = new Preprocessor();
 	}
 	
 	public void addDocument(Document document) {
 		document.setShingler(shingler);
 		document.setTokenizer(tokenizer);
+		document.setPreprocessor(preprocessor);
 		document.prepare();
 		documentRepository.add(document);
 	}
