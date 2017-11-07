@@ -1,0 +1,10 @@
+import java.util.*
+
+class Greeting {
+    String who = "world";
+    String greet = "hello";
+
+    void sayHi() {
+        System.out.println(greet + " " + who);
+    }
+}

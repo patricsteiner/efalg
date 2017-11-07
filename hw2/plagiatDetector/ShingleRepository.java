@@ -15,9 +15,11 @@ public class ShingleRepository {
 	}
 	
 	public int add(Shingle shingle) {
-		if (shingleIndices.containsKey(shingle)) return shingleIndices.get(shingle);	
+		if (shingleIndices.containsKey(shingle)) return shingleIndices.get(shingle);
+		int currentIndex = shingles.size();
 		shingles.add(shingle);
-		return shingleIndices.put(shingle, shingles.size() - 1); // -1 because we want to start at index 0
+		shingleIndices.put(shingle, currentIndex);
+		return currentIndex;
 	}
 	
 	public boolean contains(Shingle shingle) {

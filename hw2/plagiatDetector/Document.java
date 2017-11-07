@@ -7,25 +7,26 @@ import java.util.List;
 
 public class Document {
 	private List<String> tokens;
-	private Collection<Integer> shinlgeIndices;
+	private Collection<Integer> shingleIndices;
 	
 	public Document(String rawContent) {
 		tokens = tokenize(rawContent);
 	}
 	
 	private List<String> tokenize(String rawContent) {
-		return Arrays.asList(rawContent.split(" "));
+		//rawContent = rawContent.replaceAll("", " ");
+		return Arrays.asList(rawContent.split("[ \\n\\r\\n\\t]+"));
 	}
 	
 	public List<String> getTokens() {
-		return (List<String>) Collections.unmodifiableCollection(tokens);
+		return Collections.unmodifiableList(tokens);
 	}
 	
-	public void setShingleIndices(Collection<Integer> shingleIndices) {
-		//TODO shinlgeIndices = shingler.makeShingles(this);
+	public void setShingleIndices(Shingler shingler) {
+		shingleIndices = shingler.makeShinglesAndAddToRepository(this);
 	}
 	
-	public Collection<Integer> getShinlgeIndices() {
-		return Collections.unmodifiableCollection(shinlgeIndices);
+	public Collection<Integer> getShingleIndices() {
+		return Collections.unmodifiableCollection(shingleIndices);
 	}
 }
