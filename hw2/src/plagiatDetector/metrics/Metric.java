@@ -1,5 +1,5 @@
-package plagiatDetector;
-
+package plagiatDetector.metrics;
+//TODO
 public interface Metric {
 	public int getValue();
 	

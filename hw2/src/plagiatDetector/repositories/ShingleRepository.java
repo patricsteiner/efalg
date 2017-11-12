@@ -1,4 +1,6 @@
-package plagiatDetector;
+package plagiatDetector.repositories;
+
+import plagiatDetector.util.Shingle;
 
 import java.util.ArrayList;
 import java.util.HashMap;

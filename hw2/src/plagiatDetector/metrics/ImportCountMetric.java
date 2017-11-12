@@ -1,8 +1,8 @@
-package plagiatDetector;
+package plagiatDetector.metrics;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+//TODO
 public class ImportCountMetric implements Metric {
 
 	@Override

@@ -1,9 +1,9 @@
-package plagiatDetector;
+package plagiatDetector.repositories;
+
+import plagiatDetector.models.Document;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 public class DocumentRepository {

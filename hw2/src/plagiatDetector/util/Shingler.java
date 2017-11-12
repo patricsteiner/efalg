@@ -1,10 +1,10 @@
-package plagiatDetector;
+package plagiatDetector.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import plagiatDetector.models.Document;
+import plagiatDetector.repositories.ShingleRepository;
+
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class Shingler {
 	
@@ -17,14 +17,14 @@ public class Shingler {
 		this.shingleRepository = shingleRepository;
 	}
 	
-	public HashSet<Integer> makeShinglesAndAddToRepository(Document document) {
+	public HashSet<Integer> makeShinglesAndAddToRepository(List<String> tokens) {
 		HashSet<Integer> shingleIds = new HashSet<>();
-		for (int i = 0; i < document.getTokens().size() - tokensPerShingle; i++) {
-			String tokens[] = new String[tokensPerShingle];
+		for (int i = 0; i < tokens.size() - tokensPerShingle; i++) {
+			String tokensInShingle[] = new String[tokensPerShingle];
 			for (int j = 0; j < tokensPerShingle; j++) {
-				tokens[j] = document.getTokens().get(i + j);
+				tokensInShingle[j] = tokens.get(i + j);
 			}
-			shingleIds.add(shingleRepository.add(new Shingle(tokens)));
+			shingleIds.add(shingleRepository.add(new Shingle(tokensInShingle)));
 		}
 		return shingleIds;
 	}

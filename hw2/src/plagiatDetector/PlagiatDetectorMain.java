@@ -1,16 +1,12 @@
 package plagiatDetector;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import plagiatDetector.gui.PlagiatDetectorPane;
 
 public class PlagiatDetectorMain extends Application {
 	
