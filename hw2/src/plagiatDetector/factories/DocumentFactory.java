@@ -1,9 +1,14 @@
 package plagiatDetector.factories;
 
+import plagiatDetector.metrics.FileCountMetric;
+import plagiatDetector.metrics.FolderCountMetric;
 import plagiatDetector.models.Document;
+import plagiatDetector.util.JavaSourceFolder;
 import plagiatDetector.util.Preprocessor;
 import plagiatDetector.util.Shingler;
 import plagiatDetector.util.Tokenizer;
+
+import java.io.File;
 
 public class DocumentFactory {
 
@@ -19,5 +24,12 @@ public class DocumentFactory {
 
     public Document makeDocument(String name, String rawData) {
         return new Document(name, rawData, preprocessor, tokenizer, shingler);
+    }
+
+    public Document makeDocument(JavaSourceFolder javaSourceFolder) {
+        Document document = makeDocument(javaSourceFolder.getName(), javaSourceFolder.getConcatenatedContent());
+        document.addMetric(new FileCountMetric(javaSourceFolder.getFileCount()));
+        document.addMetric(new FolderCountMetric(javaSourceFolder.getFolderCount()));
+        return document;
     }
 }

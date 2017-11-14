@@ -74,9 +74,9 @@ public class PreprocessorTest {
     public void testRemoveImports() {
         String before =
                 "// some comment\n" +
-                        "import java.util.*\n" +
-                        "import com.example.some.cool.thing.*\n\n" +
-                        "import static junit.assert\n\n" +
+                        "import java.util.*;\n" +
+                        "import com.example.some.cool.thing.*;\n\n" +
+                        "import static junit.assert;\n\n" +
                         "public static void main(String[] args) {\n" +
                         "doStuff(); // does stuff\n" +
                         "}\n" +
@@ -125,10 +125,15 @@ public class PreprocessorTest {
         String before =
                 "// some comment\n" +
                         "import java.util.*\n\n" +
+                        "int a;\n" +
+                        "Long myLong;\n" +
                         "public static void main(String[] args) {\n" +
                         "int a = 2;\n" +
                         "int b = 3;\n" +
+                        "MyType myType;\n" +
                         "String word = \"yap\";\n" +
+                        "int[][] my2dArr = new int[2][2]();\n" +
+                        "Some<MyType> someMyType = new Some<>();\n" +
                         "doStuff(); // does stuff\n" +
                         "MyType myVar = new MyType();\n" +
                         "MyType2 _myVar2 = new MyType2(a, b);\n" +
@@ -139,10 +144,15 @@ public class PreprocessorTest {
         String after =
                 "// some comment\n" +
                         "import java.util.*\n\n" +
+                        "int VARIABLE_NAME;\n" +
+                        "Long VARIABLE_NAME;\n" +
                         "public static void main(String[] args) {\n" +
                         "int VARIABLE_NAME = 2;\n" +
                         "int VARIABLE_NAME = 3;\n" +
+                        "MyType VARIABLE_NAME;\n" +
                         "String VARIABLE_NAME = \"yap\";\n" +
+                        "int[][] VARIABLE_NAME = new int[2][2]();\n" +
+                        "Some<MyType> VARIABLE_NAME = new Some<>();\n" +
                         "doStuff(); // does stuff\n" +
                         "MyType VARIABLE_NAME = new MyType();\n" +
                         "MyType2 VARIABLE_NAME = new MyType2(a, b);\n" +

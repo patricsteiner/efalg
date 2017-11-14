@@ -5,6 +5,7 @@ public class Preprocessor {
 	public String preprocess(String data) {
 		data = removeWhitespaces(data);
 		data = removeComments(data);
+		data = removeImports(data);
 		data = removeModifiers(data);
 		data = removeModifiers(data);
 		data = renameVariables(data);
@@ -24,7 +25,7 @@ public class Preprocessor {
 	}
 
 	public String removeImports(String data) {
-		return data.replaceAll("import .*\n", "");
+		return data.replaceAll("import .*;\n", "");
 	}
 
 	public String removeModifiers(String data) {
@@ -32,7 +33,8 @@ public class Preprocessor {
 	}
 
 	public String renameVariables(String data) {
-		return data.replaceAll("([_\\-a-zA-Z0-9]+ )[ \t]*[_\\-a-zA-Z0-9]+[ \t]*=[ \t]*(.*);", "$1VARIABLE_NAME = $2;");
+		data = data.replaceAll("([_\\-a-zA-Z0-9<>\\[\\]]+ )[ \t]*[_\\-a-zA-Z0-9]+[ \t]*=[ \t]*(.*);", "$1VARIABLE_NAME = $2;");
+		return data.replaceAll("([_\\-a-zA-Z0-9<>\\[\\]]+ )[ \t]*[_\\-a-zA-Z0-9]+[ \t]*;", "$1VARIABLE_NAME;");
 	}
 
 	public String renameMethods(String data) {

@@ -1,10 +1,5 @@
-package testdata;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -12,7 +7,7 @@ import java.util.stream.Collectors;
  *
  * @author Patric Steiner
  */
-public class NonogramSteiner {
+public class Nonogram {
 	
 	/**
 	 * width and height of the matrix.
@@ -131,7 +126,7 @@ public class NonogramSteiner {
 	 * Constructor, taking an InputStream containing the Nonogram info.
 	 * @param in Properly formated InputStream
 	 */
-	public NonogramSteiner(InputStream in) {
+	public Nonogram(InputStream in) {
         Scanner scanner = new Scanner(in);
         height = scanner.nextInt();
         width = scanner.nextInt();

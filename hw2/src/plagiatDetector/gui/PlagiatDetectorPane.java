@@ -14,7 +14,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
 import plagiatDetector.PlagiatDetector;
+import plagiatDetector.factories.DocumentFactory;
 import plagiatDetector.models.Document;
+import plagiatDetector.util.JavaSourceFolder;
 
 public class PlagiatDetectorPane extends BorderPane {
 
@@ -23,7 +25,7 @@ public class PlagiatDetectorPane extends BorderPane {
     private Canvas canvas;
     private int gridSize;
 
-    public static final String DIR_DOCUMENTS = "hw2/data";
+    public static final String DIR_JAVASOURCEFOLDERS = "hw2/data";
 
     public PlagiatDetectorPane() throws IOException {
         plagiatDetector = new PlagiatDetector();
@@ -35,11 +37,11 @@ public class PlagiatDetectorPane extends BorderPane {
         widthProperty().addListener(e -> draw());
         heightProperty().addListener(e -> draw());
 
-        File testdata = new File(DIR_DOCUMENTS);
+        File javaSourceFolders = new File(DIR_JAVASOURCEFOLDERS);
 
-        for (File file : testdata.listFiles()) {
-            String rawContent = new String(Files.readAllBytes(file.toPath()));
-            plagiatDetector.addDocument(file.getName(), rawContent);
+        DocumentFactory documentFactory = plagiatDetector.getDocumentFactory();
+        for (File javaSourceFolder : javaSourceFolders.listFiles()) {
+            plagiatDetector.addDocument(documentFactory.makeDocument(new JavaSourceFolder(javaSourceFolder)));
         }
 
         List<Document> documents = plagiatDetector.getAllDocuments();
@@ -63,8 +65,8 @@ public class PlagiatDetectorPane extends BorderPane {
         };
         new Thread(detectorTask).start();
 
-        // documents.forEach(d -> System.out.println(d.getName() + ": " + d.getShingleIndices().stream().sorted().map(String::valueOf).reduce((i, i2) -> i + " " + i2)));
-        // documents.forEach(d -> System.out.println(d.getProcessedContent()));
+        //documents.forEach(d -> System.out.println(d.getName() + ": " + d.getShingleIndices().stream().sorted().map(String::valueOf).reduce((i, i2) -> i + " " + i2)));
+         documents.forEach(d -> System.out.println(d.getProcessedContent()));
     }
 
     /**

@@ -8,6 +8,7 @@ import plagiatDetector.util.Preprocessor;
 import plagiatDetector.util.Shingler;
 import plagiatDetector.util.Tokenizer;
 
+import javax.print.Doc;
 import java.util.List;
 
 public class PlagiatDetector {
@@ -26,13 +27,16 @@ public class PlagiatDetector {
 		documentFactory = new DocumentFactory(preprocessor, tokenizer, shingler);
 	}
 	
-	public void addDocument(String name, String rawData) {
-		Document document = documentFactory.makeDocument(name, rawData);
+	public void addDocument(Document document) {
 		documentRepository.add(document);
 	}
 
 	public List<Document> getAllDocuments() {
 		return documentRepository.getAll();
+	}
+
+	public DocumentFactory getDocumentFactory() {
+		return documentFactory;
 	}
 
 	/**
