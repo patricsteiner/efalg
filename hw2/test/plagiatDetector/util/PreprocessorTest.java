@@ -71,6 +71,30 @@ public class PreprocessorTest {
     }
 
     @Test
+    public void testRemoveImports() {
+        String before =
+                "// some comment\n" +
+                        "import java.util.*\n" +
+                        "import com.example.some.cool.thing.*\n\n" +
+                        "import static junit.assert\n\n" +
+                        "public static void main(String[] args) {\n" +
+                        "doStuff(); // does stuff\n" +
+                        "}\n" +
+                        "}";
+        String after =
+                "// some comment\n" +
+                        "" +
+                        "\n" +
+                        "\n" +
+                        "public static void main(String[] args) {\n" +
+                        "doStuff(); // does stuff\n" +
+                        "}\n" +
+                        "}";
+        Preprocessor preprocessor = new Preprocessor();
+        assertEquals(after, preprocessor.removeImports(before));
+    }
+
+    @Test
     public void testRemoveModifier() {
         String before =
                 "import java.util.*\n\n" +
@@ -86,7 +110,7 @@ public class PreprocessorTest {
                 "import java.util.*\n\n" +
                         "int x = 2;\n" +
                         "int y = 2;\n" +
-                        "final int z = 2;\n" +
+                        "int z = 2;\n" +
                         "Long l = 2L;\n" +
                         "static void main(String[] args) {\n" +
                         "doStuff(); \n" +

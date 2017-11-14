@@ -6,7 +6,10 @@ public class Preprocessor {
 		data = removeWhitespaces(data);
 		data = removeComments(data);
 		data = removeModifiers(data);
+		data = removeModifiers(data);
 		data = renameVariables(data);
+		data = renameMethods(data);
+		data = replaceTypes(data);
 		return data;
 	}
 
@@ -15,13 +18,17 @@ public class Preprocessor {
 		return data.replaceAll("[\n\r\n]+", "\n");
 	}
 
-	// this regex was shamelessly stolen from here: https://stackoverflow.com/a/1740692/4030765
+	// this regex was shamelessly stolen from https://stackoverflow.com/a/1740692/4030765
 	public String removeComments(String data) {
 		return data.replaceAll("//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "");
 	}
 
+	public String removeImports(String data) {
+		return data.replaceAll("import .*\n", "");
+	}
+
 	public String removeModifiers(String data) {
-		return data.replaceAll("public|private|protected|final", "");
+		return data.replaceAll("public |private |protected |final ", "");
 	}
 
 	public String renameVariables(String data) {
@@ -30,6 +37,12 @@ public class Preprocessor {
 
 	public String renameMethods(String data) {
 		return data.replaceAll("(.*[ \t]+)[_\\-a-zA-Z0-9]+(\\(.*\\))", "$1METHOD_NAME$2");
+	}
+
+	public String replaceTypes(String data) {
+		data = data.replaceAll("long|short|byte|Long|Short|Byte", "int");
+		data = data.replaceAll("float|Float|Double", "double");
+		return data;
 	}
 
 }
