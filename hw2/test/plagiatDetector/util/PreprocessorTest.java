@@ -16,11 +16,11 @@ public class PreprocessorTest {
                         "\t}\n" +
                         "}";
         String after =
-                "// some comment\n" +
-                        " import java.util.*\n" +
-                        " public static void main(String[] args) { \n" +
-                        " doStuff(); // does stuff\n" +
-                        " }\n" +
+                "// some comment " +
+                        "import java.util.* " +
+                        "public static void main(String[] args) { " +
+                        "doStuff(); // does stuff " +
+                        "} " +
                         "}";
         Preprocessor preprocessor = new Preprocessor();
         assertEquals(after, preprocessor.removeWhitespaces(before));
@@ -155,9 +155,9 @@ public class PreprocessorTest {
                         "Some<MyType> VARIABLE_NAME = new Some<>();\n" +
                         "doStuff(); // does stuff\n" +
                         "MyType VARIABLE_NAME = new MyType();\n" +
-                        "MyType2 VARIABLE_NAME = new MyType2(a, b);\n" +
-                        "double VARIABLE_NAME = 22.0002d;\n" +
-                        "long VARIABLE_NAME = 0xABCDEFL;\n" +
+                        "MyType2 VARIABLE_NAME = new MyType2(VARIABLE_NAME, VARIABLE_NAME);\n" +
+                        "double    VARIABLE_NAME    =   22.0002d;\n" +
+                        "long VARIABLE_NAME=0xABCDEFL;\n" +
                         "}\n" +
                         "}";
         Preprocessor preprocessor = new Preprocessor();

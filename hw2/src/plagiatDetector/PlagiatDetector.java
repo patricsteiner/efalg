@@ -8,7 +8,6 @@ import plagiatDetector.util.Preprocessor;
 import plagiatDetector.util.Shingler;
 import plagiatDetector.util.Tokenizer;
 
-import javax.print.Doc;
 import java.util.List;
 
 public class PlagiatDetector {
@@ -16,7 +15,7 @@ public class PlagiatDetector {
 	private DocumentRepository documentRepository;
 	private ShingleRepository shingleRepository;
 	private DocumentFactory documentFactory;
-	private final static int TOKENS_PER_SHINGLE = 7;
+	private final static int TOKENS_PER_SHINGLE = 5;
 	
 	public PlagiatDetector() {
 		documentRepository = new DocumentRepository();

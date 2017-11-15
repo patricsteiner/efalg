@@ -3,6 +3,7 @@ package plagiatDetector.gui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 import javafx.concurrent.Task;
@@ -41,7 +42,10 @@ public class PlagiatDetectorPane extends BorderPane {
 
         DocumentFactory documentFactory = plagiatDetector.getDocumentFactory();
         for (File javaSourceFolder : javaSourceFolders.listFiles()) {
-            plagiatDetector.addDocument(documentFactory.makeDocument(new JavaSourceFolder(javaSourceFolder)));
+            Document document = documentFactory.makeDocument(new JavaSourceFolder(javaSourceFolder));
+            plagiatDetector.addDocument(document);
+            File documentAsFile = new File(Paths.get(javaSourceFolder.getPath(), document.getName().concat(".txt")).toString());
+            Files.write(documentAsFile.toPath(), document.getProcessedContent().getBytes());
         }
 
         List<Document> documents = plagiatDetector.getAllDocuments();

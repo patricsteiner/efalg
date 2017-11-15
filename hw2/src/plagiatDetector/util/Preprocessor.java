@@ -1,22 +1,25 @@
 package plagiatDetector.util;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Preprocessor {
 
 	public String preprocess(String data) {
-		data = removeWhitespaces(data);
 		data = removeComments(data);
+		data = removeWhitespaces(data);
 		data = removeImports(data);
 		data = removeModifiers(data);
 		data = removeModifiers(data);
 		data = renameVariables(data);
 		data = renameMethods(data);
 		data = replaceTypes(data);
+		data = removeWhitespaces(data);
 		return data;
 	}
 
 	public String removeWhitespaces(String data) {
-		data = data.replaceAll("[\t ]+", " ");
-		return data.replaceAll("[\n\r\n]+", "\n");
+		return data.replaceAll("[\\s]+", " ");
 	}
 
 	// this regex was shamelessly stolen from https://stackoverflow.com/a/1740692/4030765
@@ -33,8 +36,12 @@ public class Preprocessor {
 	}
 
 	public String renameVariables(String data) {
-		data = data.replaceAll("([_\\-a-zA-Z0-9<>\\[\\]]+ )[ \t]*[_\\-a-zA-Z0-9]+[ \t]*=[ \t]*(.*);", "$1VARIABLE_NAME = $2;");
-		return data.replaceAll("([_\\-a-zA-Z0-9<>\\[\\]]+ )[ \t]*[_\\-a-zA-Z0-9]+[ \t]*;", "$1VARIABLE_NAME;");
+		Matcher matcher = Pattern.compile("[a-zA-Z_$]+[_$a-zA-Z0-9<>\\[\\]]*\\s+([_\\-a-zA-Z0-9]+)\\s*(=.*(;|,)|(;|,))").matcher(data);
+		while (matcher.find()) {
+			String variableName = matcher.group(1);
+			data = data.replaceAll("([^a-zA-Z0-9]+)" + variableName + "([^a-zA-Z0-9])", "$1VARIABLE_NAME$2");
+		}
+		return data;
 	}
 
 	public String renameMethods(String data) {
