@@ -7,10 +7,7 @@ import ch.fhnw.edu.efalg.graph.Vertex;
 import ch.fhnw.edu.efalg.graph.edges.IntegerEdge;
 import ch.fhnw.edu.efalg.graph.gui.impl.Node;
 
-import java.awt.*;
 import java.util.*;
-import java.util.List;
-
 
 /**
  * Implementation of the Kruskal MST algorithm.
@@ -46,6 +43,7 @@ public final class Kruskal<V extends Vertex, E extends Edge> extends AbstractAlg
      */
     @Override
     public String execute(final GraphAlgorithmData<V, E> data) {
+        // Priority queue containing all edges in increasing order (cheapest edges are preferred)
         Queue<E> edges = new PriorityQueue<>((e1, e2) -> {
             if (e1 instanceof IntegerEdge && e2 instanceof IntegerEdge) {
                 return ((IntegerEdge) e1).getWeight() - ((IntegerEdge) e2).getWeight();
@@ -82,6 +80,13 @@ public final class Kruskal<V extends Vertex, E extends Edge> extends AbstractAlg
         return true;
     }
 
+    /**
+     * Calculates the squared length of the edge (squared so we don't need to sqrt and deal with float values).
+     * Only serves as a comparison criteria between edges if edges have no weight.
+     * @param edge
+     * @param data
+     * @return squared length of the edge in euclidean space.
+     */
     private int squaredLength(E edge, GraphAlgorithmData<V, E> data) {
         List<V> connectedVertices = data.getGraph().getEndpoints(edge);
         V src = connectedVertices.get(0);
@@ -93,12 +98,5 @@ public final class Kruskal<V extends Vertex, E extends Edge> extends AbstractAlg
         return diffX * diffX + diffY * diffY;
     }
 
-    private void sleep() {
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }
 
