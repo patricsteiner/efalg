@@ -29,7 +29,7 @@ public class MinCostMaxFlow<V extends Vertex, E extends CostCapacityFlowEdge> ex
      * @param sink   sink vertex
      */
     protected void calculateMaxFlow(final GraphAlgorithmData<V, E> data, final V source, final V sink) {
-        new FordFulkerson<V, E>().execute(data);
+        new FordFulkerson<V, E>().execute(data); // use ford-fulkerson as a basis to find a solution for max-flow
         CycleDetection<V, E> cycleDetection = new CycleDetection<>();
         cycleDetection.execute(data);
         cycleDetection.getCycles().stream()
@@ -37,7 +37,8 @@ public class MinCostMaxFlow<V extends Vertex, E extends CostCapacityFlowEdge> ex
                         .mapToInt(e -> e.getCost() * e.getFlow()).sum() < 0) // only take the cycles with negative total cost
                 .forEach(negativeCycle -> {
                     do {
-                        negativeCycle.forEach(e -> e.setFlow(e.getFlow() - 1)); // decrease flow in this cycle by 1
+                        // decrease flow in this cycle by 1 (in the script it says increase, but how could that ever work?!)
+                        negativeCycle.forEach(e -> { if (e.getFlow() > 0) e.setFlow(e.getFlow() - 1); });
                     } while (negativeCycle.stream().mapToInt(e -> e.getCost() * e.getFlow()).sum() < 0); // while cycle is negative
                 });
     }

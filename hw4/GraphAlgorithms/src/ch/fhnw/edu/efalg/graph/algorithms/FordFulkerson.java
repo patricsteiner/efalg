@@ -58,10 +58,6 @@ public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends
             path = new ArrayList<>();
             visited = new HashSet<>();
         }
-        // remove all edges with 0 flow at the end (just so it looks prettier)
-        for (Object e : data.getGraph().getEdges().toArray()) { // toArray to avoid concurrent modification
-            if (((E) e).getFlow() == 0) data.getGraph().removeEdge((E) e);
-        }
     }
 
     /**
@@ -76,7 +72,7 @@ public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends
         for (E edge : graphAlgorithmData.getGraph().getOutgoingEdges(src)) {
             V other = otherEndpoint(graphAlgorithmData, edge, src);
             int remainingCapacity = edge.getCapacity() - edge.getFlow();
-            if (remainingCapacity > 0 && !visited.contains(other)) { // make sure we only use edges with remaining capacity
+            if (remainingCapacity > 0 && !visited.contains(other)) { // make sure we only use edges with remaining capacity > 0
                 path.add(edge);
                 if (other == sink || findPath(other, sink)) return true;
             }
@@ -94,7 +90,8 @@ public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends
             V v1 = data.getGraph().getEndpoints((E) e).get(0);
             V v2 = data.getGraph().getEndpoints((E) e).get(1);
             E newEdge = null;
-            if (data.getEdgeFactory() instanceof CapacityFlowEdgeFactory) // need to to ugly class casts because the factories have not same hierarchy as edges
+            // need to do some ugly class casts to make sure this algorithm can also be used for the mincost-maxflow algorithm
+            if (data.getEdgeFactory() instanceof CapacityFlowEdgeFactory)
                 newEdge = (E) ((CapacityFlowEdgeFactory) data.getEdgeFactory())
                         .newEdge(((E) e).getCapacity());
             if (data.getEdgeFactory() instanceof CostCapacityFlowEdgeFactory)
