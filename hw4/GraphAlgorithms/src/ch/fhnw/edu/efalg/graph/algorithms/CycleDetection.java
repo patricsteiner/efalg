@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  */
 public final class CycleDetection<V extends Vertex, E extends Edge> extends AbstractAlgorithm<V, E> {
 
-    private Set<V> visited;
+    private Stack<V> unvisited;
     private List<V> startHistory;
     private List<E> edgeHistory;
     private Set<List<E>> cycles;
@@ -36,15 +36,16 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
     @Override
     public String execute(GraphAlgorithmData<V, E> data) {
         graphAlgorithmData = data;
-        visited = new HashSet<>();
+        unvisited = new Stack<>();
         startHistory = new ArrayList<>();
         edgeHistory = new ArrayList<>();
         cycles = new HashSet<>();
-        V start = getStartNode(data);
-        if (start == null) {
-            return "Empty graph,\nnothing to do";
+        // We can't just use any node as a startnode, because there might be cycles that are not reachable from that startnode.
+        // Therefore we have to make sure we visit every node.
+        graphAlgorithmData.getGraph().getVertices().forEach(unvisited::push);
+        while (!unvisited.isEmpty()) {
+            findCycles(unvisited.pop());
         }
-        findCycles(start);
         List<E> edges = cycles.stream().flatMap(List::stream).collect(Collectors.toList());
         highlightEdges(data, edges);
         darkenOtherEdges(data, edges);
@@ -57,14 +58,14 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
      * @param start the vertex to start the search with.
      */
     private void findCycles(V start) {
-        visited.add(start);
+        unvisited.remove(start);
         startHistory.add(start);
         for (E edge : graphAlgorithmData.getGraph().getOutgoingEdges(start)) {
             V dst = otherEndpoint(graphAlgorithmData, edge, start);
             if (startHistory.size() <= 1 || dst != startHistory.get(startHistory.size() - 2)) { // don't check the node we are coming from (cycle must have at least 3 nodes)
                 edgeHistory.add(edge);
-                if (visited.contains(dst)) { // there is a cycle!
-                    if (cycles.stream().noneMatch(cycle -> cycle.contains(edge))) { // make sure we only detect it once (without this check, we would detect it from both sides)
+                if (startHistory.contains(dst)) { // there is a cycle!
+                    //if (cycles.stream().noneMatch(cycle -> cycle.contains(edge))) { // make sure we only detect it once (without this check, we would detect it from both sides)
                         System.out.println("edge from " + start + " to " + dst + " closes a cycle!");
                         int index = startHistory.size() - 1;
                         // go back in the history until we reach the beginning of the cycle and add all these edges to the cycleEdges
@@ -72,9 +73,8 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
                         do {
                             cycle.add(edgeHistory.get(index));
                         } while (index > 0 && startHistory.get(index--) != dst);
-                        // TODO make sure edges are all in right order, otherwise it's not a cycle!
                         cycles.add(cycle);
-                    }
+                    //}
                 } else {
                     findCycles(dst);
                 }
