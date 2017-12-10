@@ -1,24 +1,28 @@
 package ch.fhnw.edu.efalg.graph.algorithms;
 
-import ch.fhnw.edu.efalg.graph.Edge;
 import ch.fhnw.edu.efalg.graph.GraphAlgorithmData;
 import ch.fhnw.edu.efalg.graph.Vertex;
 import ch.fhnw.edu.efalg.graph.edges.CapacityFlowEdge;
+import ch.fhnw.edu.efalg.graph.edges.CapacityFlowEdgeFactory;
+import ch.fhnw.edu.efalg.graph.edges.CostCapacityFlowEdge;
+import ch.fhnw.edu.efalg.graph.edges.CostCapacityFlowEdgeFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Implementation of the Ford-Fulkerson Max-Flow Algorithm.
  *
- * @param <V> vertex type
- * @param <E> edge type
  * @author Patric Steiner
  */
-public class FordFulkerson<V extends Vertex, E extends Edge> extends AbstractMaxFlowAlgorithm<V, E> {
+public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends AbstractMaxFlowAlgorithm<V, E> {
 
     private GraphAlgorithmData<V, E> graphAlgorithmData;
-    private List<Edge> path;
+    private List<E> path;
+    private Map<E, E> forwardEdges = new HashMap<>();
+    private Map<E, E> backwardEdges = new HashMap<>();
 
     /**
      * Constructor
@@ -36,32 +40,42 @@ public class FordFulkerson<V extends Vertex, E extends Edge> extends AbstractMax
      */
     protected void calculateMaxFlow(final GraphAlgorithmData<V, E> data, final V source, final V sink) {
         graphAlgorithmData = data;
+        createBackwardEdges(data);
         path = new ArrayList<>();
         int flow;
-        while ((flow = findPath(source, sink, 0)) > 0) { // find all possible paths through the flow graph
-            for (Edge edge : path) edge.adjustFlow(flow);
+        // find all possible paths through the flow graph
+        while ((flow = findPath(source, sink, 0)) > 0) {
+            for (E edge : path) { // adjust the flow of all edges (and corresponding forward/backward edges)
+                edge.setFlow(edge.getFlow() + flow);
+                E otherEdge = backwardEdges.get(edge);
+                if (forwardEdges.containsKey(edge)) otherEdge = forwardEdges.get(edge);
+                otherEdge.setFlow(otherEdge.getFlow() - flow);
+            }
             path = new ArrayList<>();
+        }
+        // remove all edges with 0 flow at the end (just so it looks prettier)
+        for (Object e : data.getGraph().getEdges().toArray()) { // toArray to avoid concurrent modification
+            if (((E)e).getFlow() == 0) data.getGraph().removeEdge((E) e);
         }
     }
 
     /**
      * Finds a path from src to sink.
-     * @param src node to start the search from
+     *
+     * @param src  node to start the search from
      * @param sink target node
      * @param flow current flow. At the first iteration it will be set to the maximum capacity of the chosen edge.
      * @return maximum flow through the found path
      */
     private int findPath(V src, V sink, int flow) {
-        List<Edge> edges = new ArrayList<>(); // will contain all possible edges we can choose from src
-        graphAlgorithmData.getGraph().getOutgoingEdges(src).forEach(e -> edges.add(new Edge((CapacityFlowEdge) e, false)));
-        graphAlgorithmData.getGraph().getIncomingEdges(src).forEach(e -> edges.add(new Edge((CapacityFlowEdge) e, true)));
-        for (Edge edge : edges) {
-            int remainingCapacity = edge.remainingCapacity();
+        for (E edge : graphAlgorithmData.getGraph().getOutgoingEdges(src)) {
+            int remainingCapacity = edge.getCapacity() - edge.getFlow();
             if (remainingCapacity > 0 && !path.contains(edge)) { // make sure we only use edges with remaining capacity and edges that we have not used yet.
-                if (path.size() == 0) flow = remainingCapacity; // in the first step of the path, we take the maximum possible capacity as flow
+                if (path.size() == 0)
+                    flow = remainingCapacity; // in the first step of the path, we take the maximum possible capacity as flow
                 else flow = Math.min(flow, remainingCapacity); // flow can never exceed capacity
                 path.add(edge);
-                V other = otherEndpoint(graphAlgorithmData, (E) edge.getInner(), src);
+                V other = otherEndpoint(graphAlgorithmData, edge, src);
                 if (other == sink) return flow; // found the sink!
                 return findPath(other, sink, flow); // not arrived at the sink yet, recursively continue the DFS.
             }
@@ -70,54 +84,25 @@ public class FordFulkerson<V extends Vertex, E extends Edge> extends AbstractMax
     }
 
     /**
-     * Decorator for CapacityFlowEdge to provide additional functionality and state.
+     * Creates backwards edges for all existing edges with same capacity, full flow and cost = -cost
+     *
+     * @param data
      */
-    class Edge {
-        private CapacityFlowEdge capacityFlowEdge;
-        private boolean backwards;
-
-        public Edge(CapacityFlowEdge capacityFlowEdge, boolean backwards) {
-            this.capacityFlowEdge = capacityFlowEdge;
-            this.backwards = backwards;
-        }
-
-        public int remainingCapacity() {
-            if (backwards) return capacityFlowEdge.getFlow();
-            return capacityFlowEdge.getCapacity() - capacityFlowEdge.getFlow();
-        }
-
-        /**
-         * adjusts the flow of the edge. If it's a backwards edge, flow is reduced, otherwise flow is increased.
-         * @param flow the value of adjustment
-         */
-        public void adjustFlow(int flow) {
-            capacityFlowEdge.setFlow(capacityFlowEdge.getFlow() + flow * (backwards ? -1 : 1));
-        }
-
-        public CapacityFlowEdge getInner() {
-            return capacityFlowEdge;
-        }
-
-        @Override
-        public String toString() {
-            return capacityFlowEdge.toString();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Edge edge = (Edge) o;
-            if (backwards != edge.backwards) return false;
-            return capacityFlowEdge != null ? capacityFlowEdge.equals(edge.capacityFlowEdge) : edge.capacityFlowEdge == null;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = capacityFlowEdge != null ? capacityFlowEdge.hashCode() : 0;
-            result = 31 * result + (backwards ? 1 : 0);
-            return result;
+    private void createBackwardEdges(GraphAlgorithmData<V, E> data) {
+        for (Object e : data.getGraph().getEdges().toArray()) { // toArray to avoid concurrent modification
+            V v1 = data.getGraph().getEndpoints((E) e).get(0);
+            V v2 = data.getGraph().getEndpoints((E) e).get(1);
+            E newEdge = null;
+            if (data.getEdgeFactory() instanceof CapacityFlowEdgeFactory) // need to to ugly class casts because the factories have not same hierarchy as edges
+                newEdge = (E) ((CapacityFlowEdgeFactory) data.getEdgeFactory())
+                        .newEdge(((E) e).getCapacity());
+            if (data.getEdgeFactory() instanceof CostCapacityFlowEdgeFactory)
+                newEdge = (E) ((CostCapacityFlowEdgeFactory) data.getEdgeFactory())
+                        .newEdgeWithCapacityAndCost(((CostCapacityFlowEdge) e).getCapacity(), -((CostCapacityFlowEdge) e).getCost());
+            newEdge.setFlow(newEdge.getCapacity());
+            data.getGraph().addEdge(v2, v1, newEdge);
+            forwardEdges.put(newEdge, (E) e);
+            backwardEdges.put((E) e, newEdge);
         }
     }
-
 }
