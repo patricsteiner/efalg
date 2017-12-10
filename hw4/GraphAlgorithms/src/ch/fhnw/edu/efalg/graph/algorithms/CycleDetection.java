@@ -5,10 +5,8 @@ import ch.fhnw.edu.efalg.graph.Graph;
 import ch.fhnw.edu.efalg.graph.GraphAlgorithmData;
 import ch.fhnw.edu.efalg.graph.Vertex;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the cycle detection algorithm. Detecting a closing edge of a cycle can simply be done by using
@@ -25,7 +23,7 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
     private Set<V> visited;
     private List<V> startHistory;
     private List<E> edgeHistory;
-    private Set<E> cycleEdges;
+    private Set<List<E>> cycles;
     private GraphAlgorithmData<V, E> graphAlgorithmData;
 
     /**
@@ -41,13 +39,13 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
         visited = new HashSet<>();
         startHistory = new ArrayList<>();
         edgeHistory = new ArrayList<>();
-        cycleEdges = new HashSet<>();
+        cycles = new HashSet<>();
         V start = getStartNode(data);
         if (start == null) {
             return "Empty graph,\nnothing to do";
         }
         findCycles(start);
-        List<E> edges = new ArrayList<>(cycleEdges);
+        List<E> edges = cycles.stream().flatMap(List::stream).collect(Collectors.toList());
         highlightEdges(data, edges);
         darkenOtherEdges(data, edges);
         return "Finished";
@@ -66,12 +64,16 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
             if (startHistory.size() <= 1 || dst != startHistory.get(startHistory.size() - 2)) { // don't check the node we are coming from (cycle must have at least 3 nodes)
                 edgeHistory.add(edge);
                 if (visited.contains(dst)) { // there is a cycle!
-                    if (!cycleEdges.contains(edge)) { // make sure we only detect it once (without this check, we would detect it from both sides)
+                    if (cycles.stream().noneMatch(cycle -> cycle.contains(edge))) { // make sure we only detect it once (without this check, we would detect it from both sides)
+                        System.out.println("edge from " + start + " to " + dst + " closes a cycle!");
                         int index = startHistory.size() - 1;
                         // go back in the history until we reach the beginning of the cycle and add all these edges to the cycleEdges
+                        List<E> cycle = new ArrayList<>();
                         do {
-                            cycleEdges.add(edgeHistory.get(index));
+                            cycle.add(edgeHistory.get(index));
                         } while (index > 0 && startHistory.get(index--) != dst);
+                        // TODO make sure edges are all in right order, otherwise it's not a cycle!
+                        cycles.add(cycle);
                     }
                 } else {
                     findCycles(dst);
@@ -85,5 +87,9 @@ public final class CycleDetection<V extends Vertex, E extends Edge> extends Abst
     @Override
     public boolean worksWith(Graph graph) {
         return true;
+    }
+
+    public Set<List<E>> getCycles() {
+        return Collections.unmodifiableSet(cycles);
     }
 }
