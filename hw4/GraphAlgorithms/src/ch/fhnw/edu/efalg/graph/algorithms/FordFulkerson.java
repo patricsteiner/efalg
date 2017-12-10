@@ -7,10 +7,7 @@ import ch.fhnw.edu.efalg.graph.edges.CapacityFlowEdgeFactory;
 import ch.fhnw.edu.efalg.graph.edges.CostCapacityFlowEdge;
 import ch.fhnw.edu.efalg.graph.edges.CostCapacityFlowEdgeFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implementation of the Ford-Fulkerson Max-Flow Algorithm.
@@ -21,6 +18,7 @@ public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends
 
     private GraphAlgorithmData<V, E> graphAlgorithmData;
     private List<E> path;
+    private Set<V> visited;
     private Map<E, E> forwardEdges = new HashMap<>();
     private Map<E, E> backwardEdges = new HashMap<>();
 
@@ -42,20 +40,27 @@ public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends
         graphAlgorithmData = data;
         createBackwardEdges(data);
         path = new ArrayList<>();
-        int flow;
+        visited = new HashSet<>();
         // find all possible paths through the flow graph
-        while ((flow = findPath(source, sink, 0)) > 0) {
+        while (findPath(source, sink)) {
+            path.forEach(p -> System.out.print(p.getLabel() + " "));
+            System.out.println();
+            int maxFlow = path.stream()
+                    .mapToInt(e -> e.getCapacity() - e.getFlow()) // remaining capacity
+                    .min()
+                    .orElseThrow(() -> new IllegalStateException("Path is empty"));
             for (E edge : path) { // adjust the flow of all edges (and corresponding forward/backward edges)
-                edge.setFlow(edge.getFlow() + flow);
+                edge.setFlow(edge.getFlow() + maxFlow);
                 E otherEdge = backwardEdges.get(edge);
                 if (forwardEdges.containsKey(edge)) otherEdge = forwardEdges.get(edge);
-                otherEdge.setFlow(otherEdge.getFlow() - flow);
+                otherEdge.setFlow(otherEdge.getFlow() - maxFlow);
             }
             path = new ArrayList<>();
+            visited = new HashSet<>();
         }
         // remove all edges with 0 flow at the end (just so it looks prettier)
         for (Object e : data.getGraph().getEdges().toArray()) { // toArray to avoid concurrent modification
-            if (((E)e).getFlow() == 0) data.getGraph().removeEdge((E) e);
+            if (((E) e).getFlow() == 0) data.getGraph().removeEdge((E) e);
         }
     }
 
@@ -64,23 +69,19 @@ public class FordFulkerson<V extends Vertex, E extends CapacityFlowEdge> extends
      *
      * @param src  node to start the search from
      * @param sink target node
-     * @param flow current flow. At the first iteration it will be set to the maximum capacity of the chosen edge.
-     * @return maximum flow through the found path
+     * @return true if there is a path with at least flow 1, false otherwise.
      */
-    private int findPath(V src, V sink, int flow) {
+    private boolean findPath(V src, V sink) {
+        visited.add(src);
         for (E edge : graphAlgorithmData.getGraph().getOutgoingEdges(src)) {
+            V other = otherEndpoint(graphAlgorithmData, edge, src);
             int remainingCapacity = edge.getCapacity() - edge.getFlow();
-            if (remainingCapacity > 0 && !path.contains(edge)) { // make sure we only use edges with remaining capacity and edges that we have not used yet.
-                if (path.size() == 0)
-                    flow = remainingCapacity; // in the first step of the path, we take the maximum possible capacity as flow
-                else flow = Math.min(flow, remainingCapacity); // flow can never exceed capacity
+            if (remainingCapacity > 0 && !visited.contains(other)) { // make sure we only use edges with remaining capacity
                 path.add(edge);
-                V other = otherEndpoint(graphAlgorithmData, edge, src);
-                if (other == sink) return flow; // found the sink!
-                return findPath(other, sink, flow); // not arrived at the sink yet, recursively continue the DFS.
+                if (other == sink || findPath(other, sink)) return true;
             }
         }
-        return 0;
+        return false;
     }
 
     /**
