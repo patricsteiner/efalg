@@ -78,13 +78,13 @@ This allows us to do a very simple comparison between documents, by just compari
 Note: programmatically we can obviously use another data structure than an array of length of total shingles, e.g. a set of integers to save memory.
 
 #### Similarity
-When every document is represented by a binary vector, documents can easily be compared using the jaccard-similarity, which is defined as
+When every document is represented by a binary vector, documents can easily be compared using the jaccard similarity, which is defined as
 the size of the intersection divided by the size of the union of the documents, which will always be a value between 0 and 1 inclusive.
 Example:
 ```
-ShinlgeId:    1 2 3 4 5 6 7
-Document1:    0 0 1 1 0 1 0
-Document2:    0 0 1 0 1 1 0
+Shinlge id:   1 2 3 4 5 6 7
+Document 1:   0 0 1 1 0 1 0
+Document 2:   0 0 1 0 1 1 0
 
 Intersection: 0 0 1 0 0 1 0
 Union:        0 0 1 1 1 1 0
@@ -125,7 +125,7 @@ By setting it to 10 for example, we get these results:
 
 ![Results](results.png)
 
-### Discussion
+### Results
 
 As we can see, even though we know for sure that two programs are plagiarisms, the similarity can be as low as around 50%.
 However, for all the documents that we know are not plagiarisms, the similarity is either 0% or 1%, which is extremely accurate.
