@@ -1,11 +1,13 @@
 package plagiatDetector.models;
 
-import plagiatDetector.metrics.Metric;
 import plagiatDetector.util.Preprocessor;
 import plagiatDetector.util.Shingler;
 import plagiatDetector.util.Tokenizer;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a Document which can be compared to other Documents with the PlagiatDetector.
@@ -21,7 +23,6 @@ public class Document {
 	private Shingler shingler;
 	private String rawContent;
 	private String processedContent;
-	private List<Metric> metrics;
 
 	public Document(String name, String rawContent, Preprocessor preprocessor, Tokenizer tokenizer, Shingler shingler) {
 		this.name = name;
@@ -32,7 +33,6 @@ public class Document {
 		this.processedContent = preprocessor.preprocess(rawContent);
 		this.tokens = tokenizer.tokenize(processedContent);
 		this.shingleIds = shingler.makeShinglesAndAddToRepository(tokens);
-		this.metrics = new ArrayList<>();
 	}
 
 	public String getName() {
@@ -53,9 +53,5 @@ public class Document {
 	
 	public Set<Integer> getShingleIndices() {
 		return Collections.unmodifiableSet(shingleIds);
-	}
-
-	public void addMetric(Metric metric) {
-		metrics.add(metric);
 	}
 }

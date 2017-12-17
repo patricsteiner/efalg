@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class PreprocessorTest {
+public class BasicJavaSourceCodePreprocessorTest {
 
     @Test
     public void testRemoveWhiteSpaces() {
@@ -22,7 +22,7 @@ public class PreprocessorTest {
                         "doStuff(); // does stuff " +
                         "} " +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.removeWhitespaces(before));
     }
 
@@ -42,7 +42,7 @@ public class PreprocessorTest {
                         "doStuff(); \n" +
                         "}\n" +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.removeComments(before));
     }
 
@@ -66,7 +66,7 @@ public class PreprocessorTest {
                         "doOtherStuff() \n" +
                         "}\n" +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.removeComments(before));
     }
 
@@ -90,7 +90,7 @@ public class PreprocessorTest {
                         "doStuff(); // does stuff\n" +
                         "}\n" +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.removeImports(before));
     }
 
@@ -116,7 +116,7 @@ public class PreprocessorTest {
                         "doStuff(); \n" +
                         "}\n" +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.removeModifiers(before));
     }
 
@@ -160,7 +160,7 @@ public class PreprocessorTest {
                         "long VARIABLE_NAME=0xABCDEFL;\n" +
                         "}\n" +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.renameVariables(before));
     }
 
@@ -190,7 +190,7 @@ public class PreprocessorTest {
                         "void METHOD_NAME() {\n/*TODO*/\n}\n" +
                         "protected static MyType METHOD_NAME(MyType a) {\n/*TODO*/\n}\n" +
                         "}";
-        Preprocessor preprocessor = new Preprocessor();
+        BasicJavaSourceCodePreprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
         assertEquals(after, preprocessor.renameMethods(before));
     }
 

@@ -18,7 +18,15 @@ public class NonogramSteinerPlagiat {
 	 * width and height of the matrix.
 	 */
 	private final int width, height;
-	
+
+	/**
+	 * A different 2d array with equal dimensions as matrix is used to store pre-processed values.
+	 * This could technically be done in the matrix itself, but I decided to use a seperate array
+	 * to have a cleaner and more general backtracking function.
+	 */
+	private int[][] preprocessed;
+
+
 	/**
 	 * This 2d array represents the current state of the Nonogram. 
 	 * Possible values can be UNKNOWN, FILLED or EMPTY.
@@ -28,27 +36,20 @@ public class NonogramSteinerPlagiat {
     private int[][] matrix;
     
     /**
-     * A different 2d array with equal dimensions as matrix is used to store pre-processed values.
-     * This could technically be done in the matrix itself, but I decided to use a seperate array
-     * to have a cleaner and more general backtracking function.
-     */
-    private int[][] preprocessed;
-    
-    /**
      * A different 2d array with equal dimensions as matrix is used to predict values according
      * to the current state of the solution.
      */
     private int[][] predictions;
-    
+
+	/**
+	 * All the column hints that we need to solve the nonogram.
+	 */
+	private List<List<Integer>> colHints;
+
     /**
      * All the row hints that we need to solve the nonogram. 
      */
     private List<List<Integer>> rowHints;
-
-	/**
-     * All the column hints that we need to solve the nonogram. 
-     */
-    private List<List<Integer>> colHints;
     
     /**
      * For debugging purposes, a delay in ms can be set. if > 0, the algorithm will stop for the 
@@ -69,17 +70,18 @@ public class NonogramSteinerPlagiat {
     /**
      * Possible values for fields in the matrix.
      */
-    public final static int UNKNOWN = 0;
+	public  final static int EMPTY = -1;
     public final static int FILLED = 1;
-    public  final static int EMPTY = -1;
-
-    public int getHeight() {
-		return height;
-	}
+	public final static int UNKNOWN = 0;
 
 	public int getWidth() {
 		return width;
 	}
+    public int getHeight() {
+		return height;
+	}
+
+
 	
 	/**
 	 * Gets the rowHints. Attention: not cloned, so not safe to edit! but also not needed in this context.
@@ -106,17 +108,7 @@ public class NonogramSteinerPlagiat {
 	public int get(int i, int j) {
 		return matrix[i][j];
 	}
-	
-	/**
-	 * Get a value from the predictions.
-	 * @param i row
-	 * @param j column
-	 * @return UNKNOWN, FILLED or EMPTY
-	 */
-	public int getPrediction(int i, int j) {
-		return predictions[i][j];
-	}
-	
+
 	/**
 	 * Get a value from the preprocessed values.
 	 * @param i row
@@ -126,7 +118,17 @@ public class NonogramSteinerPlagiat {
 	public int getPreprocessed(int i, int j) {
 		return preprocessed[i][j];
 	}
-	
+
+	/**
+	 * Get a value from the predictions.
+	 * @param i row
+	 * @param j column
+	 * @return UNKNOWN, FILLED or EMPTY
+	 */
+	public int getPrediction(int i, int j) {
+		return predictions[i][j];
+	}
+
 	/**
 	 * Constructor, taking an InputStream containing the Nonogram info.
 	 * @param in Properly formated InputStream

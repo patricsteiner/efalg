@@ -4,6 +4,7 @@ import plagiatDetector.factories.DocumentFactory;
 import plagiatDetector.models.Document;
 import plagiatDetector.repositories.DocumentRepository;
 import plagiatDetector.repositories.ShingleRepository;
+import plagiatDetector.util.BasicJavaSourceCodePreprocessor;
 import plagiatDetector.util.Preprocessor;
 import plagiatDetector.util.Shingler;
 import plagiatDetector.util.Tokenizer;
@@ -18,14 +19,14 @@ public class PlagiatDetectorService {
 	private DocumentRepository documentRepository;
 	private ShingleRepository shingleRepository;
 	private DocumentFactory documentFactory;
-	private final static int TOKENS_PER_SHINGLE = 5;
+	private final static int TOKENS_PER_SHINGLE = 7;
 	
 	public PlagiatDetectorService() {
 		documentRepository = new DocumentRepository();
 		shingleRepository = new ShingleRepository();
 		Shingler shingler = new Shingler(TOKENS_PER_SHINGLE, shingleRepository);
 		Tokenizer tokenizer = new Tokenizer();
-		Preprocessor preprocessor = new Preprocessor();
+		Preprocessor preprocessor = new BasicJavaSourceCodePreprocessor();
 		documentFactory = new DocumentFactory(preprocessor, tokenizer, shingler);
 	}
 	

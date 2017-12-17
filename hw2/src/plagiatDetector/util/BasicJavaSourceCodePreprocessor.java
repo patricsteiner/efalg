@@ -35,7 +35,12 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 		return data;
 	}
 
-	private String removeWhitespaces(String data) {
+    /**
+     * Removes all unecessary whitespaces in the code and replaces them by a single whitespace character.
+     * @param data the java source code.
+     * @return the String after the replacement took place.
+     */
+    public String removeWhitespaces(String data) {
 		return data.replaceAll("[\\s]+", " ");
 	}
 
@@ -44,7 +49,7 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 	 * @param data the java source code.
 	 * @return the String after the replacement took place.
 	 */
-	private String removeComments(String data) {
+    public String removeComments(String data) {
 		return data.replaceAll("//.*|(\"(?:\\\\[^\"]|\\\\\"|.)*?\")|(?s)/\\*.*?\\*/", "");
 	}
 
@@ -53,7 +58,7 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 	 * @param data the java source code.
 	 * @return the String after the replacement took place.
 	 */
-	private String removeImports(String data) {
+    public String removeImports(String data) {
 		return data.replaceAll("import .*;\n", "");
 	}
 
@@ -62,7 +67,7 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 	 * @param data the java source code.
 	 * @return the String after the replacement took place.
 	 */
-	private String removeModifiers(String data) {
+    public String removeModifiers(String data) {
 		return data.replaceAll("public |private |protected |final ", "");
 	}
 
@@ -71,7 +76,7 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 	 * @param data the java source code.
 	 * @return the String after the replacement took place.
 	 */
-	private String renameVariables(String data) {
+    public String renameVariables(String data) {
 		Matcher matcher = Pattern.compile("[a-zA-Z_$]+[_$a-zA-Z0-9<>\\[\\]]*\\s+([_\\-a-zA-Z0-9]+)\\s*(=.*(;|,)|(;|,))").matcher(data);
 		while (matcher.find()) {
 			String variableName = matcher.group(1);
@@ -85,7 +90,7 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 	 * @param data the java source code.
 	 * @return the String after the replacement took place.
 	 */
-	private String renameMethods(String data) {
+    public String renameMethods(String data) {
 		return data.replaceAll("(.*[ \t]+)[_\\-a-zA-Z0-9]+(\\(.*\\))", "$1METHOD_NAME$2");
 	}
 
@@ -94,7 +99,7 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 	 * @param data the java source code.
 	 * @return the String after the replacement took place.
 	 */
-	private String replaceTypes(String data) {
+    public String replaceTypes(String data) {
 		data = data.replaceAll("long|short|byte|Long|Short|Byte", "int");
 		data = data.replaceAll("float|Float|Double", "double");
 		return data;

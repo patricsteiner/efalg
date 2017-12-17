@@ -21,7 +21,7 @@ import java.io.PrintWriter;
 public class NonoMain extends Application {
 	
 	// ######################################################
-	// SET THESE VALUES NEFORE RUNNING 
+	// SET THESE VALUES BEFORE RUNNING
 	
 	private final static String FILENAME_IN = "rabbit.txt";
 	private final static String FILENAME_OUT = "out.txt";
@@ -46,6 +46,17 @@ public class NonoMain extends Application {
 	 */
 	public static void main(String[] args) {
 		launch(args);
+	}
+
+
+	/**
+	 * Makes sure the algorithm stops when the window is closed.
+	 */
+	@Override
+	public void stop() throws Exception {
+		nonogram.stopSolving();
+		System.out.println(nonogram); // print the current state of the nonogram.
+		super.stop();
 	}
 
 	/**
@@ -100,15 +111,5 @@ public class NonoMain extends Application {
 		Timeline guiUpdater = new Timeline(new KeyFrame(Duration.millis(GUI_UPDATE_INTERVAL), e -> nonoPane.draw()));
 		guiUpdater.setCycleCount(Timeline.INDEFINITE);
 		guiUpdater.play();
-	}
-	
-	/**
-	 * Makes sure the algorithm stops when the window is closed.
-	 */
-	@Override
-	public void stop() throws Exception {
-		nonogram.stopSolving();
-		System.out.println(nonogram); // print the current state of the nonogram.
-		super.stop();
 	}
 }

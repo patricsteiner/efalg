@@ -1,15 +1,10 @@
 package plagiatDetector.gui;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
-
 import javafx.concurrent.Task;
 import javafx.geometry.VPos;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -19,8 +14,12 @@ import plagiatDetector.models.Document;
 import plagiatDetector.services.PlagiatDetectorService;
 import plagiatDetector.util.JavaSourceFolder;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 /**
- * Graphical user interface that shows a similarity-matrix of all the Documents in the DocuemtnRepository.
+ * Graphical user interface that shows a similarity-matrix of all the Documents in the DocumentRepository.
  */
 public class PlagiatDetectorPane extends BorderPane {
 
@@ -28,8 +27,6 @@ public class PlagiatDetectorPane extends BorderPane {
     private double[][] similarityMatrix;
     private Canvas canvas;
     private int gridSize;
-
-    public static final String DIR_JAVASOURCEFOLDERS = "hw2/data";
 
     public PlagiatDetectorPane(PlagiatDetectorService plagiatDetectorService) throws IOException {
         this.plagiatDetectorService = plagiatDetectorService;
@@ -41,14 +38,20 @@ public class PlagiatDetectorPane extends BorderPane {
         widthProperty().addListener(e -> draw());
         heightProperty().addListener(e -> draw());
 
-        File javaSourceFolders = new File(DIR_JAVASOURCEFOLDERS);
+        TextInputDialog textInputDialog = new TextInputDialog("hw2/data");
+        textInputDialog.setTitle("PlagiatDetector");
+        textInputDialog.setHeaderText("Please specify the folder containing the java programs");
+        String javaSourceFoldersRoot = textInputDialog.showAndWait()
+                .orElseThrow(() -> new IllegalArgumentException("javaSourceFoldersRoot needs to be specified"));
+
+        File javaSourceFolders = new File(javaSourceFoldersRoot);
 
         DocumentFactory documentFactory = plagiatDetectorService.getDocumentFactory();
         for (File javaSourceFolder : javaSourceFolders.listFiles()) {
             Document document = documentFactory.makeDocument(new JavaSourceFolder(javaSourceFolder));
             plagiatDetectorService.addDocument(document);
-            File documentAsFile = new File(Paths.get(javaSourceFolder.getPath(), document.getName().concat(".txt")).toString());
-            Files.write(documentAsFile.toPath(), document.getProcessedContent().getBytes());
+            // File documentAsFile = new File(Paths.get(javaSourceFolder.getPath(), document.getName().concat(".txt")).toString());
+            // Files.write(documentAsFile.toPath(), document.getProcessedContent().getBytes());
         }
 
         List<Document> documents = plagiatDetectorService.getAllDocuments();
@@ -66,14 +69,11 @@ public class PlagiatDetectorPane extends BorderPane {
                         similarityMatrix[i][j] = similarity;
                     }
                 }
-                draw();
                 return null;
             }
         };
+        detectorTask.setOnSucceeded(event -> draw());
         new Thread(detectorTask).start();
-
-        //documents.forEach(d -> System.out.println(d.getName() + ": " + d.getShingleIndices().stream().sorted().map(String::valueOf).reduce((i, i2) -> i + " " + i2)));
-         documents.forEach(d -> System.out.println(d.getProcessedContent()));
     }
 
     /**
@@ -125,13 +125,13 @@ public class PlagiatDetectorPane extends BorderPane {
         gc.setFont(new Font("Arial", getWidth() >= getHeight() ? scaleY(.15) : scaleX(.1)));
         for (int i = 0; i < plagiatDetectorService.getAllDocuments().size(); i++) {
             String documentName = plagiatDetectorService.getAllDocuments().get(i).getName();
-            documentName = makeStringMultiline(documentName, 15);
+            documentName = wrapString(documentName, 16);
             gc.fillText(documentName, scaleX(.5), scaleY(i + 1.5));
             gc.fillText(documentName, scaleX(i + 1.5), scaleY(.5));
         }
     }
 
-    private String makeStringMultiline(String string, int maxLineLength) {
+    private String wrapString(String string, int maxLineLength) {
         if (string.length() <= maxLineLength) return string;
         StringBuilder stringBuilder = new StringBuilder(string);
         int index = maxLineLength;

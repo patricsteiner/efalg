@@ -87,8 +87,6 @@ public class NonogramSteinerPlagiat3 {
 	public boolean solve(int delay) throws InterruptedException {
 		myStopped = false;
 		this.myDelay = delay;
-		// optional: preprocess the Nonogram, finding some cells that are filled for sure
-		// and thus making the backtracking process afterwards faster.
 		preprocess();
 		return findSolution(0); // start at row 0
 	}
@@ -142,7 +140,6 @@ public class NonogramSteinerPlagiat3 {
 	}
 
 	private void preprocess() {
-		// do the whole process for the rows
 		for (int i = 0; i < myHeight; i++) {
 			int sumOfHints = myRowHints.get(i).stream().mapToInt(Integer::valueOf).sum();
 			int minimalOccupiedSpace = sumOfHints + myRowHints.get(i).size() - 1; // always 1 space between blocks
@@ -150,16 +147,14 @@ public class NonogramSteinerPlagiat3 {
 			for (int k = 0; k < myRowHints.get(i).size(); k++) {
 				pos = pos + myRowHints.get(i).get(k) - 1;
 				int difference = myWidth - minimalOccupiedSpace - myRowHints.get(i).get(k);
-				// if the difference is < 0: we can certainly fill a part of the matrix!
 				if (difference < 0) {
 					for (int j = pos; j > pos + difference; j--) {
 						myPreprocessed[i][j] = FILLED;
 					}
 				}
-				pos += 2; // +2 because there is at least 1 space in between
+				pos += 2;
 			}
 		}
-		// now repeat the same for the columns
 		for (int j = 0; j < myWidth; j++) {
 			int sumOfHints = myColHints.get(j).stream().mapToInt(Integer::valueOf).sum();
 			int minimalOccupiedSpace = sumOfHints + myColHints.get(j).size() - 1; // always 1 space between blocks
@@ -185,19 +180,13 @@ public class NonogramSteinerPlagiat3 {
         	System.out.println(this);
         	return true;
         }
-        
-        // predict as much as possible for the next row, given the current state.
     	makePrediction(row);
-    	
-    	// for all possible next solutions
         while (nextPermutation(row)) {
         	if (myDelay > 0) Thread.sleep(myDelay);
-        	// make sure the calculated permutation is valid. If so, recursively call this function again with the next row.
         	if (matchesPrediction(row) && matchesPreprocessed(row)) {
         		if (findSolution(row + 1)) return true;
         	}
         }
-        // if no of the solutions are valid: reset this row and backtrack.
         resetRow(row);
         myRowCounter--;
         return false;
@@ -218,15 +207,12 @@ public class NonogramSteinerPlagiat3 {
 	    			blockSize = 0;
 	    		}
 	    	}
-	    	// if a block already started and is not completed: this field certainly needs to be FILLED
     		if (blockSize > 0 && blockSize < hint) {
     			myPredictions[row][j] = FILLED;
     		}
-    		// if the block is exactly completed: next field is certainly EMTPY
     		else if (blockSize == hint) {
     			myPredictions[row][j] = EMPTY;
     		}
-    		// otherwise we cannot make a prediction
     		else {
     			myPredictions[row][j] = UNKNOWN;
     		}
@@ -256,7 +242,7 @@ public class NonogramSteinerPlagiat3 {
     	if (rightMostBlockSize == 0) return false;
     	int[] vector = myMatrix[row];
     	if (vector[0] == UNKNOWN) {
-    		firstPermutationWithPredictions(row); // could be changed to firstPermutation(row) if no predictions shall be made.
+    		firstPermutationWithPredictions(row);
     		return true;
     	}
     	// First step: find the starting position of the rightmost block
@@ -272,12 +258,9 @@ public class NonogramSteinerPlagiat3 {
     		vector[rightMostBlockPosition + rightMostBlockSize] = FILLED;
     		return true;
     	}
-    	// If there is no space after the rightmost block: 
-    	// try to find the next block from the right that can be moved to the right
     	int i = rightMostBlockPosition - 2; // it is at least 2 units further away (there is always a space between blocks)
     	if (i < 0) return false; // if there is no such block: no more permutations possible
-    	int emptyCells = 1; // count the empty cells between blocks
-    	// do until we found a block and there are at least 2 spaces right to it
+    	int emptyCells = 1;
     	while(vector[i] == EMPTY || vector[i+1] != EMPTY || vector[i+2] != EMPTY) {
     		if (vector[i] == EMPTY) emptyCells++;
     		else emptyCells = 0;
@@ -292,9 +275,6 @@ public class NonogramSteinerPlagiat3 {
     	}
     	vector[i] = EMPTY; // "move" the found block 1 unit to right
     	vector[i + filledCells] = FILLED;
-    	// move all the other blocks as far to the left as possible (zeros is used as offset basically)
-    	// the +2 / -2 is there because starting from the rightmost side of the found block (i + ones), 
-    	// we don't just need to go 1 unit to the right, but 2, since there is a space between each block.
     	for (int j = i + filledCells + 2; j < vector.length - emptyCells + 2; j++) {
     		if (j != j + emptyCells - 2) {
 	    		vector[j] = vector[j + emptyCells - 2];

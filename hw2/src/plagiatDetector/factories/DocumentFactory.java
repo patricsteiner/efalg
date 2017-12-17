@@ -1,7 +1,5 @@
 package plagiatDetector.factories;
 
-import plagiatDetector.metrics.FileCountMetric;
-import plagiatDetector.metrics.FolderCountMetric;
 import plagiatDetector.models.Document;
 import plagiatDetector.util.JavaSourceFolder;
 import plagiatDetector.util.Preprocessor;
@@ -29,8 +27,6 @@ public class DocumentFactory {
 
     public Document makeDocument(JavaSourceFolder javaSourceFolder) {
         Document document = makeDocument(javaSourceFolder.getName(), javaSourceFolder.getConcatenatedContent());
-        document.addMetric(new FileCountMetric(javaSourceFolder.getFileCount()));
-        document.addMetric(new FolderCountMetric(javaSourceFolder.getFolderCount()));
         return document;
     }
 }

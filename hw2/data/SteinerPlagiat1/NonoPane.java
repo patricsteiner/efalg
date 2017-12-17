@@ -17,21 +17,7 @@ public class NonoPane extends BorderPane {
 	private int gridWidth;
 	private int gridHeight;
 	private Canvas canvas;
-	
-	/**
-	 * C-tor, sets up the Pane.
-	 * @param nonogram the nonogram associated with this GUI.
-	 */
-	public NonoPane(Nonogram nonogram) {
-		canvas = new Canvas();
-		setCenter(canvas);
-		canvas.widthProperty().bind(widthProperty());
-		canvas.heightProperty().bind(heightProperty());
-		widthProperty().addListener(e -> draw());
-		heightProperty().addListener(e -> draw());
-		setNonogram(nonogram);
-	}
-	
+
 	/**
 	 * Sets the nonogram associated with this GUI, calculates the width and height of the Pane
 	 * according to the width and height of the Nonogram and (re)draws the Pane.
@@ -44,6 +30,20 @@ public class NonoPane extends BorderPane {
 		gridHeight = nonogram.getHeight() + nonogram.getColHints().stream().max((l1, l2) -> l1.size() - l2.size()).get().size();
 		gridWidth = nonogram.getWidth() + nonogram.getRowHints().stream().max((l1, l2) -> l1.size() - l2.size()).get().size();
 		draw();
+	}
+
+	/**
+	 * C-tor, sets up the Pane.
+	 * @param nonogram the nonogram associated with this GUI.
+	 */
+	public NonoPane(Nonogram nonogram) {
+		canvas = new Canvas();
+		setCenter(canvas);
+		canvas.widthProperty().bind(widthProperty());
+		canvas.heightProperty().bind(heightProperty());
+		widthProperty().addListener(e -> draw());
+		heightProperty().addListener(e -> draw());
+		setNonogram(nonogram);
 	}
 	
 	/**
