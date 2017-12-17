@@ -6,10 +6,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Repository for storage of all Shingles.
+ */
 public class ShingleRepository {
 	
 	private ArrayList<Shingle> shingles;
-	private Map<Shingle, Integer> shingleIds;
+	private Map<Shingle, Integer> shingleIds; // in addition to the ArrayList that stores the shingle, this Map allows quick lookup for shingles.
 	
 	public ShingleRepository() {
 		shingles = new ArrayList<>();

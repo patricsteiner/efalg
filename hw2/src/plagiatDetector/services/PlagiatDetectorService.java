@@ -1,4 +1,4 @@
-package plagiatDetector;
+package plagiatDetector.services;
 
 import plagiatDetector.factories.DocumentFactory;
 import plagiatDetector.models.Document;
@@ -10,14 +10,17 @@ import plagiatDetector.util.Tokenizer;
 
 import java.util.List;
 
-public class PlagiatDetector {
+/**
+ * The service that can be used by the frontend to communicate with the backend.
+ */
+public class PlagiatDetectorService {
 	
 	private DocumentRepository documentRepository;
 	private ShingleRepository shingleRepository;
 	private DocumentFactory documentFactory;
 	private final static int TOKENS_PER_SHINGLE = 5;
 	
-	public PlagiatDetector() {
+	public PlagiatDetectorService() {
 		documentRepository = new DocumentRepository();
 		shingleRepository = new ShingleRepository();
 		Shingler shingler = new Shingler(TOKENS_PER_SHINGLE, shingleRepository);

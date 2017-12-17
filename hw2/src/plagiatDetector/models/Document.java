@@ -7,6 +7,10 @@ import plagiatDetector.util.Tokenizer;
 
 import java.util.*;
 
+/**
+ * Represents a Document which can be compared to other Documents with the PlagiatDetector.
+ * For example: A Document is the complete java source code of a students java project.
+ */
 public class Document {
 	
 	private String name;

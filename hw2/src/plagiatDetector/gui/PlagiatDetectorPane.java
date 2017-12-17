@@ -14,22 +14,25 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.TextAlignment;
-import plagiatDetector.PlagiatDetector;
 import plagiatDetector.factories.DocumentFactory;
 import plagiatDetector.models.Document;
+import plagiatDetector.services.PlagiatDetectorService;
 import plagiatDetector.util.JavaSourceFolder;
 
+/**
+ * Graphical user interface that shows a similarity-matrix of all the Documents in the DocuemtnRepository.
+ */
 public class PlagiatDetectorPane extends BorderPane {
 
-    private PlagiatDetector plagiatDetector;
+    private PlagiatDetectorService plagiatDetectorService;
     private double[][] similarityMatrix;
     private Canvas canvas;
     private int gridSize;
 
     public static final String DIR_JAVASOURCEFOLDERS = "hw2/data";
 
-    public PlagiatDetectorPane() throws IOException {
-        plagiatDetector = new PlagiatDetector();
+    public PlagiatDetectorPane(PlagiatDetectorService plagiatDetectorService) throws IOException {
+        this.plagiatDetectorService = plagiatDetectorService;
 
         canvas = new Canvas();
         setCenter(canvas);
@@ -40,15 +43,15 @@ public class PlagiatDetectorPane extends BorderPane {
 
         File javaSourceFolders = new File(DIR_JAVASOURCEFOLDERS);
 
-        DocumentFactory documentFactory = plagiatDetector.getDocumentFactory();
+        DocumentFactory documentFactory = plagiatDetectorService.getDocumentFactory();
         for (File javaSourceFolder : javaSourceFolders.listFiles()) {
             Document document = documentFactory.makeDocument(new JavaSourceFolder(javaSourceFolder));
-            plagiatDetector.addDocument(document);
+            plagiatDetectorService.addDocument(document);
             File documentAsFile = new File(Paths.get(javaSourceFolder.getPath(), document.getName().concat(".txt")).toString());
             Files.write(documentAsFile.toPath(), document.getProcessedContent().getBytes());
         }
 
-        List<Document> documents = plagiatDetector.getAllDocuments();
+        List<Document> documents = plagiatDetectorService.getAllDocuments();
 
         Task detectorTask = new Task<Void>() {
             @Override
@@ -59,7 +62,7 @@ public class PlagiatDetectorPane extends BorderPane {
                     for (int j = 0; j < documents.size(); j++) {
                         Document d1 = documents.get(i);
                         Document d2 = documents.get(j);
-                        double similarity = plagiatDetector.similarity(d1, d2);
+                        double similarity = plagiatDetectorService.similarity(d1, d2);
                         similarityMatrix[i][j] = similarity;
                     }
                 }
@@ -106,9 +109,6 @@ public class PlagiatDetectorPane extends BorderPane {
         for (int i = 0; i < similarityMatrix.length; i++) {
             for (int j = 0; j < similarityMatrix.length; j++) {
                 Color color = Color.gray((1 - similarityMatrix[i][j] / 2));
-                //if (similarityMatrix[i][j] > 1 / 2d) color = Color.YELLOW;
-                //if (similarityMatrix[i][j] > 3 / 4d) color = Color.RED;
-                //if (similarityMatrix[i][j] < 1 / 5d) color = Color.GREEN;
                 gc.setFill(color);
                 gc.fillRect(scaleX(i + 1), scaleY(j + 1), scaleX(i + 2), scaleY(j + 2));
                 gc.setFill(Color.BLACK);
@@ -123,8 +123,8 @@ public class PlagiatDetectorPane extends BorderPane {
         }
         // draw document names
         gc.setFont(new Font("Arial", getWidth() >= getHeight() ? scaleY(.15) : scaleX(.1)));
-        for (int i = 0; i < plagiatDetector.getAllDocuments().size(); i++) {
-            String documentName = plagiatDetector.getAllDocuments().get(i).getName();
+        for (int i = 0; i < plagiatDetectorService.getAllDocuments().size(); i++) {
+            String documentName = plagiatDetectorService.getAllDocuments().get(i).getName();
             documentName = makeStringMultiline(documentName, 15);
             gc.fillText(documentName, scaleX(.5), scaleY(i + 1.5));
             gc.fillText(documentName, scaleX(i + 1.5), scaleY(.5));

@@ -1,11 +1,13 @@
 package plagiatDetector.util;
 
-import plagiatDetector.models.Document;
 import plagiatDetector.repositories.ShingleRepository;
 
 import java.util.HashSet;
 import java.util.List;
 
+/**
+ * Util class that produces Shingles from given Tokens and stores the Shingles in the ShingleRepository.
+ */
 public class Shingler {
 	
 	private final int tokensPerShingle;

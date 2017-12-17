@@ -3,6 +3,9 @@ package plagiatDetector.util;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * A Shinlge is an n-tupel of tokens. In the Scope of the PlagiatDetector, a token is simply a String/word.
+ */
 public class Shingle {
 
 	private List<String> tokens;

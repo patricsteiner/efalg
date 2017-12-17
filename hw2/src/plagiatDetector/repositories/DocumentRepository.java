@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Repository for storage of all Documents.
+ */
 public class DocumentRepository {
 	
 	private List<Document> documents;

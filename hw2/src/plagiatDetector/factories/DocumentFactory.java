@@ -8,8 +8,9 @@ import plagiatDetector.util.Preprocessor;
 import plagiatDetector.util.Shingler;
 import plagiatDetector.util.Tokenizer;
 
-import java.io.File;
-
+/**
+ * Factory that creates a Document out of a given JavaSourceFolder.
+ */
 public class DocumentFactory {
 
     private Tokenizer tokenizer;
