@@ -9,6 +9,7 @@ up with a program that can be used by professors for plagiarism detection betwee
 ## Usage
 ### Preparation
 Create a folder containing all the projects that shall be checked for plagiarism, e.g.:
+```
 - C:/StudentProjects
   - StudentA
     - ProjectX
@@ -23,6 +24,7 @@ Create a folder containing all the projects that shall be checked for plagiarism
   - StudentC
     - ...
   - ...
+  ```
 ### Running the program
 - Run PlagiatDetectorMain.java
 - Input the path to the folder created in the previous step
@@ -41,10 +43,10 @@ the program will most likely be similar, regardless if it is a plagiat or not.
 ### How are plagiats made?
 To find out what students would most likely do when plagiarizing a software project, I asked around a bit. The most common
 answers were:
-- changing variable names
-- adding/removing/modifying comments
-- re-ordering statements
-- splitting up code in different classes or merging several classes into one
+- Changing variable names
+- Adding/removing/modifying comments
+- Re-ordering statements
+- Splitting up code in different classes or merging several classes into one
 
 These things are all quite easy to do, even if you have no idea what the program that you are plagiarizing does, so these
 are certainly things that people who plagiarize source code will do.
@@ -96,10 +98,10 @@ To get a more accurate result, all the documents are preprocessed with the aim t
 by the person plagiarizing are disregarded (as well as possible).
 
 Things that are done in preprocessing includes:
-- renaming all variables and methods
-- removing import statements, comments certain modifiers
-- removing indentation and unnecessary spaces
-- converting number types to either int or double
+- Renaming all variables and methods
+- Removing import statements, comments certain modifiers
+- Removing indentation and unnecessary spaces
+- Converting number types to either int or double
 
 This way we get rid of many things people do to plagiarize source code and can achieve a more accurate comparison result.
 
@@ -138,9 +140,9 @@ losing minimal information.
 
 ## Failed approaches
 Initially I planned to also compare documents by using metrics like:
-- amount of public/private/protected/final modifiers
-- amount of files/classes/packages/imports
-- several other counting metrics
+- Amount of public/private/protected/final modifiers
+- Amount of files/classes/packages/imports
+- Several other counting metrics
 
 I tried using these kinds of metrics and included them in the effective similarity calculation. It turns out though that they only
 have a minimal impact on the end result, so I discarded this idea and removed the metrics from the calculation to keep things simpler.
