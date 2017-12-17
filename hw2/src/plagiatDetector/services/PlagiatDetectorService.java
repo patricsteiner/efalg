@@ -19,7 +19,7 @@ public class PlagiatDetectorService {
 	private DocumentRepository documentRepository;
 	private ShingleRepository shingleRepository;
 	private DocumentFactory documentFactory;
-	private final static int TOKENS_PER_SHINGLE = 7;
+	private final static int TOKENS_PER_SHINGLE = 5;
 	
 	public PlagiatDetectorService() {
 		documentRepository = new DocumentRepository();

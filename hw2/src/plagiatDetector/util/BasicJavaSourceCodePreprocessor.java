@@ -27,7 +27,6 @@ public class BasicJavaSourceCodePreprocessor implements Preprocessor {
 		data = removeWhitespaces(data);
 		data = removeImports(data);
 		data = removeModifiers(data);
-		data = removeModifiers(data);
 		data = renameVariables(data);
 		data = renameMethods(data);
 		data = replaceTypes(data);
