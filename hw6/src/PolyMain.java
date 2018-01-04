@@ -3,6 +3,7 @@ import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -68,7 +69,10 @@ public class PolyMain extends Application {
                 return null;
             }
         };
-        maxSquareFinderTask.setOnSucceeded(e -> processNextPolygon(polyPane));
+        maxSquareFinderTask.setOnSucceeded(e -> {
+            new Alert(Alert.AlertType.INFORMATION, "Done").showAndWait();
+            processNextPolygon(polyPane);
+        });
         new Thread(maxSquareFinderTask).start();
     }
 }

@@ -3,7 +3,9 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 
+import java.awt.geom.Line2D;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class PolyPane extends BorderPane {
@@ -43,8 +45,13 @@ public class PolyPane extends BorderPane {
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, getWidth(), getHeight());
         gc.setLineWidth(2);
-        polygon.lines().stream().forEach(line -> gc.strokeLine(scaleX(line.getX1()), scaleY(line.getY1()), scaleX(line.getX2()), scaleY(line.getY2())));
+        polygon.lines().forEach(drawLine(gc));
         gc.setLineWidth(1);
-        squares.stream().flatMap(square -> square.lines().stream()).forEach(line -> gc.strokeLine(scaleX(line.getX1()), scaleY(line.getY1()), scaleX(line.getX2()), scaleY(line.getY2())));
+        squares.stream().flatMap(square -> square.lines().stream()).forEach(drawLine(gc));
     }
+
+    private Consumer<Line2D> drawLine(GraphicsContext gc) {
+        return line -> gc.strokeLine(scaleX(line.getX1()), scaleY(line.getY1()), scaleX(line.getX2()), scaleY(line.getY2()));
+    }
+
 }
