@@ -1,12 +1,10 @@
-
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.stream.Stream;
 
 public class PolyPane extends BorderPane {
 
@@ -14,33 +12,25 @@ public class PolyPane extends BorderPane {
     private List<Square> squares;
     private Canvas canvas;
 
-    public PolyPane(List<Polygon> polygons) {
+    public PolyPane() {
         canvas = new Canvas();
         setCenter(canvas);
         canvas.widthProperty().bind(widthProperty());
         canvas.heightProperty().bind(heightProperty());
         widthProperty().addListener(e -> draw());
         heightProperty().addListener(e -> draw());
-        polygons.forEach(this::findMaxSquare);
-        //findMaxSquare(polygons.get(0));
     }
 
-    void findMaxSquare(Polygon polygon) {
+    public void setPolygon(Polygon polygon) {
         this.polygon = polygon;
-        squares = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-            double x, y;
-            do { // pick random point in polygon
-                x = Math.random() * polygon.width() + polygon.minX();
-                y = Math.random() * polygon.height() + polygon.minY();
-            } while (!polygon.fxPolygon().contains(x, y));
-            squares.add(new Square(x, y));
-        }
-        draw();
+    }
+
+    public void setSquares(List<Square> squares) {
+        this.squares = squares;
     }
 
     private double scaleX(double x) {
-        return getWidth()/ polygon.width() * (x - polygon.minX()) * .97 + 10;
+        return getWidth() / polygon.width() * (x - polygon.minX()) * .97 + 10;
     }
 
     private double scaleY(double y) {
@@ -48,12 +38,13 @@ public class PolyPane extends BorderPane {
     }
 
     public void draw() {
+        if (polygon == null) return;
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, getWidth(), getHeight());
-        gc.setFill(Color.BLACK);
         gc.setLineWidth(2);
-        polygon.lines().forEach(line -> gc.strokeLine(scaleX(line.getX1()), scaleY(line.getY1()), scaleX(line.getX2()), scaleY(line.getY2())));
-        squares.forEach(s -> gc.strokeOval(scaleX(s.centerX), scaleY(s.centerY), 2, 2));
+        polygon.lines().stream().forEach(line -> gc.strokeLine(scaleX(line.getX1()), scaleY(line.getY1()), scaleX(line.getX2()), scaleY(line.getY2())));
+        gc.setLineWidth(1);
+        squares.stream().flatMap(square -> square.lines().stream()).forEach(line -> gc.strokeLine(scaleX(line.getX1()), scaleY(line.getY1()), scaleX(line.getX2()), scaleY(line.getY2())));
     }
 }

@@ -18,7 +18,6 @@ public class Polygon {
         minY = points.stream().map(Point2D::getY).sorted(Double::compareTo).findFirst().get();
         maxX = points.stream().map(Point2D::getX).sorted((a, b) -> -a.compareTo(b)).findFirst().get();
         maxY = points.stream().map(Point2D::getY).sorted((a, b) -> -a.compareTo(b)).findFirst().get();
-
         lines = new ArrayList<>();
         for (int i = 0; i < points.size() - 1; i++) {
             lines.add(new Line2D.Double(points.get(i), points.get(i+1)));
