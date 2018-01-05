@@ -15,9 +15,11 @@ public class MaxSquareFinder {
     }
 
     public void run() {
-        for (int i = 0; i < 100; i++) {
-            checkIntersection();
-            growSquares();
+        for (int i = 0; i < 5000; i++) {
+            for (Square square : squares) {
+                if (square.canGrow()) square.grow(); // every square to max size with start-angle
+                else if (square.tilt()) square.grow(); // when it can't grow anymore: tilt it
+            }
             try {
                 Thread.sleep(delay);
             } catch (InterruptedException e) {
@@ -26,35 +28,15 @@ public class MaxSquareFinder {
         }
     }
 
-    private void growSquares() {
-        for (Square square : squares) {
-            if (!square.frozen()) {
-                square.growByFactor(1.1);
-            }
-        }
-    }
-
-    private void checkIntersection() {
-        for (Square square : squares) {
-            List<Line2D> lines = square.lines();
-            for (Line2D squareLine : lines) {
-                if (polygon.lines().stream().anyMatch(line -> line.intersectsLine(squareLine))) {
-                    square.freeze();
-                    break;
-                }
-            }
-        }
-    }
-
     private void initSquares() {
         squares = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 50; i++) {
             double x, y;
             do { // pick random point in polygon
                 x = Math.random() * polygon.width() + polygon.minX();
                 y = Math.random() * polygon.height() + polygon.minY();
             } while (!polygon.fxPolygon().contains(x, y));
-            squares.add(new Square(x, y, polygon.width() / 100));
+            squares.add(new Square(polygon, x, y, polygon.width() / 100));
         }
     }
 
