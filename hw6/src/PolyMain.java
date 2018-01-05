@@ -15,7 +15,7 @@ import java.util.*;
 public class PolyMain extends Application {
 
     private final static int GUI_UPDATE_INTERVAL = 100; // in milliseconds
-    private final static int DELAY = 1; // in milliseconds
+    private final static int DELAY = 0; // in milliseconds
 
     private static final String FILE_PATH = "hw6/Max-Square_in_Polygon.txt";
     private static Queue<Polygon> polygons;

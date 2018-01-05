@@ -1,5 +1,6 @@
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class MaxSquareFinder {
@@ -15,10 +16,19 @@ public class MaxSquareFinder {
     }
 
     public void run() {
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 10000; i++) {
             for (Square square : squares) {
-                if (square.canGrow()) square.grow(); // every square to max size with start-angle
-                else if (square.tilt()) square.grow(); // when it can't grow anymore: tilt it
+                if (square.canGrow()) square.grow();
+                else if (square.angle() < 90 && !square.frozen()) {
+                    if (square.size() > square.maxSize()) {
+                        square.maxSize(square.size());
+                        square.bestAngle(square.angle());
+                    }
+                    square.tilt();
+                } else {
+                    square.freeze();
+                    // start finetuning?
+                }
             }
             try {
                 Thread.sleep(delay);
@@ -36,7 +46,7 @@ public class MaxSquareFinder {
                 x = Math.random() * polygon.width() + polygon.minX();
                 y = Math.random() * polygon.height() + polygon.minY();
             } while (!polygon.fxPolygon().contains(x, y));
-            squares.add(new Square(polygon, x, y, polygon.width() / 100));
+            squares.add(new Square(polygon, x, y, polygon.width() / 1000));
         }
     }
 

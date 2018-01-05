@@ -1,19 +1,18 @@
 import java.awt.geom.Line2D;
-import java.util.ArrayList;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
 
 public class Square {
 
     private double centerX, centerY;
-    private double size;
-    private double angle;
-    private double bestCenterX, bestCenterY;
-    //double x1, x2, x3, x4, y1, y2, y3, y4;
-    private boolean frozen;
+    private double size, maxSize;
+    private double angle, bestAngle;
     private double growthFactor = 1.001;
     private double tiltDegrees = 1;
     private Polygon polygon;
+    private List<Line2D> lines;
+    private boolean frozen;
 
     public Square(Polygon polygon, double centerX, double centerY, double size) {
         if (polygon == null) throw new IllegalArgumentException("polygon must not be null");
@@ -22,77 +21,58 @@ public class Square {
         this.centerX = centerX;
         this.centerY = centerY;
         this.size = size;
+        calculateLines();
     }
 
     public void grow() {
         this.size *= growthFactor;
+        calculateLines();
     }
 
     public void shrink() {
         this.size /= growthFactor;
+        calculateLines();
     }
 
-    public void setGrowthFactor(double growthFactor) {
+    public void growthFactor(double growthFactor) {
         if (growthFactor <= 0) throw new IllegalArgumentException("growthFactor must be > 0");
         this.growthFactor = growthFactor;
     }
 
-    public boolean tilt() {
-        while (angle < 90) {
-            this.angle += tiltDegrees;
-            if (canGrow()) return true;
-        }
-        return false;
+    public void tilt() {
+        this.angle += tiltDegrees;
+        calculateLines();
     }
 
     public List<Line2D> lines() {
-        double tempX, tempY;
-        double angleRad = angle * Math.PI / 180;
+        return lines;
+    }
 
-        double x1 = centerX - size;
-        double y1 = centerY;
-        tempX = x1 - centerX;
-        tempY = y1 - centerY;
-        x1 = centerX + tempX*Math.cos(angleRad) - tempY*Math.sin(angleRad);
-        y1 = centerY + tempX*Math.sin(angleRad) + tempY*Math.cos(angleRad);
-        double x2 = centerX;
-        double y2 = centerY + size;
-        tempX = x2 - centerX;
-        tempY = y2 - centerY;
-        x2 = centerX + tempX*Math.cos(angleRad) - tempY*Math.sin(angleRad);
-        y2 = centerY + tempX*Math.sin(angleRad) + tempY*Math.cos(angleRad);
-        double x3 = centerX + size;
-        double y3 = centerY;
-        tempX = x3 - centerX;
-        tempY = y3 - centerY;
-        x3 = centerX + tempX*Math.cos(angleRad) - tempY*Math.sin(angleRad);
-        y3 = centerY + tempX*Math.sin(angleRad) + tempY*Math.cos(angleRad);
-        double x4 = centerX;
-        double y4 = centerY - size;
-        tempX = x4 - centerX;
-        tempY = y4 - centerY;
-        x4 = centerX + tempX*Math.cos(angleRad) - tempY*Math.sin(angleRad);
-        y4 = centerY + tempX*Math.sin(angleRad) + tempY*Math.cos(angleRad);
-        return Arrays.asList(
-                new Line2D.Double(x1, y1, x2, y2),
-                new Line2D.Double(x2, y2, x3, y3),
-                new Line2D.Double(x3, y3, x4, y4),
-                new Line2D.Double(x4, y4, x1, y1)
+    private void calculateLines() {
+        double angleRad = angle * Math.PI / 180;
+        Point2D p1 = new Point2D.Double(centerX - size, centerY);
+        translate(p1, angleRad);
+        Point2D p2 = new Point2D.Double(centerX, centerY + size);
+        translate(p2, angleRad);
+        Point2D p3 = new Point2D.Double(centerX + size, centerY);
+        translate(p3, angleRad);
+        Point2D p4 = new Point2D.Double(centerX, centerY - size);
+        translate(p4, angleRad);
+        lines = Arrays.asList(
+                new Line2D.Double(p1, p2),
+                new Line2D.Double(p2, p3),
+                new Line2D.Double(p3, p4),
+                new Line2D.Double(p4, p1)
         );
     }
 
-    public void freeze() {
-        frozen = true;
+    private void translate(Point2D point, double angleRad) {
+        double tempX = point.getX() - centerX;
+        double tempY = point.getY() - centerY;
+        double x = centerX + tempX * Math.sin(angleRad) + tempY * Math.cos(angleRad);
+        double y = centerY + tempX * Math.cos(angleRad) - tempY * Math.sin(angleRad);
+        point.setLocation(x, y);
     }
-
-    public boolean frozen() {
-        return frozen;
-    }
-
-    //public void savePosition() {
-      //  bestCenterX = centerX;
-      //  bestCenterY = centerY;
-    //}
 
     public boolean intersects() {
         return polygon.lines().stream().anyMatch(polygonLine -> lines().stream().anyMatch(squareLine -> squareLine.intersectsLine(polygonLine)));
@@ -105,7 +85,42 @@ public class Square {
         return canGrow;
     }
 
-    public void setTiltDegrees(double tiltDegrees) {
+    public void tiltDegrees(double tiltDegrees) {
         this.tiltDegrees = tiltDegrees;
     }
+
+    public double angle() {
+        return angle;
+    }
+
+    public double bestAngle() {
+        return bestAngle;
+    }
+
+    public void bestAngle(double bestAngle) {
+        this.bestAngle = bestAngle;
+    }
+
+    public double size() {
+        return size;
+    }
+
+    public double maxSize() {
+        return maxSize;
+    }
+
+    public void maxSize(double maxSize) {
+        this.maxSize = maxSize;
+    }
+
+    public void freeze() {
+        frozen = true;
+        size = maxSize;
+        angle = bestAngle;
+    }
+
+    public boolean frozen() {
+        return frozen;
+    }
+
 }
