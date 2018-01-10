@@ -6,7 +6,6 @@ import javafx.scene.paint.Color;
 import java.awt.geom.Line2D;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class PolyPane extends BorderPane {
 

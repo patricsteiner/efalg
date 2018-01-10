@@ -26,8 +26,8 @@ public class Polygon {
         fxPolygon = new javafx.scene.shape.Polygon(points.stream().flatMapToDouble(p -> DoubleStream.of(p.getX(), p.getY())).toArray());
     }
 
-    public javafx.scene.shape.Polygon fxPolygon() {
-        return fxPolygon;
+    public boolean contains(double x, double y) {
+        return fxPolygon.contains(x, y);
     }
 
     public List<Line2D> lines() {

@@ -59,13 +59,13 @@ public class PolyMain extends Application {
     private void processNextPolygon(PolyPane polyPane) {
         if (polygons.isEmpty()) return;
         Polygon polygon = polygons.poll();
-        final MaxSquareFinder maxSquareFinder = new MaxSquareFinder(polygon, DELAY);
+        final ParticleSwarmMaxSquareAlgorithm particleSwarmMaxSquareAlgorithm = new ParticleSwarmMaxSquareAlgorithm(polygon, DELAY);
         polyPane.setPolygon(polygon);
-        polyPane.setSquares(maxSquareFinder.squares());
+        polyPane.setSquares(particleSwarmMaxSquareAlgorithm.squares());
         Task<Void> maxSquareFinderTask = new Task<Void>() {
             @Override
             protected Void call() throws Exception {
-                maxSquareFinder.run();
+                particleSwarmMaxSquareAlgorithm.run();
                 return null;
             }
         };
