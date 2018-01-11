@@ -6,11 +6,13 @@ import java.util.stream.DoubleStream;
 
 public class Polygon {
 
-    private javafx.scene.shape.Polygon fxPolygon;
-    private List<Point2D> points;
-    private List<Line2D> lines;
-    private double minX, maxX;
-    private double minY, maxY;
+    private final javafx.scene.shape.Polygon fxPolygon;
+    private final List<Point2D> points;
+    private final List<Line2D> lines;
+    private final double minX;
+    private final double maxX;
+    private final double minY;
+    private final double maxY;
 
     public Polygon(List<Point2D> points) {
         this.points = points;
@@ -28,6 +30,14 @@ public class Polygon {
 
     public boolean contains(double x, double y) {
         return fxPolygon.contains(x, y);
+    }
+
+    private boolean intersects(Line2D line) {
+        return this.lines.stream().anyMatch(polygonLine -> polygonLine.intersectsLine(line));
+    }
+
+    public boolean intersects(List<Line2D> lines) {
+        return lines.stream().anyMatch(this::intersects);
     }
 
     public List<Line2D> lines() {

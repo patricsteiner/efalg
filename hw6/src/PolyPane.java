@@ -11,7 +11,7 @@ public class PolyPane extends BorderPane {
 
     private Polygon polygon;
     private List<Square> squares;
-    private Canvas canvas;
+    private final Canvas canvas;
 
     public PolyPane() {
         canvas = new Canvas();
@@ -20,6 +20,7 @@ public class PolyPane extends BorderPane {
         canvas.heightProperty().bind(heightProperty());
         widthProperty().addListener(e -> draw());
         heightProperty().addListener(e -> draw());
+        setOnMouseClicked(e -> System.out.println(e.getX() + " " + e.getY()));
     }
 
     public void setPolygon(Polygon polygon) {

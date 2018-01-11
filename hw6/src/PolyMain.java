@@ -75,4 +75,5 @@ public class PolyMain extends Application {
         });
         new Thread(maxSquareFinderTask).start();
     }
+
 }

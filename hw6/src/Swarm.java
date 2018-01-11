@@ -1,16 +1,17 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Swarm {
 
     private double bestX, bestY;
     private double bestSize;
-    private List<Particle> particles;
+    private final List<Particle> particles = new ArrayList<>();
 
-    Swarm(List<Particle> particles) {
-        this.particles = particles;
+    public void addNewParticle(Polygon polygon, double x, double y) {
+        particles.add(new Particle(this, polygon, x, y));
     }
 
-    List<Particle> particles() {
+    public List<Particle> particles() {
         return particles;
     }
 
@@ -18,7 +19,7 @@ public class Swarm {
         return bestX;
     }
 
-    public void setBestX(double bestX) {
+    public void bestX(double bestX) {
         this.bestX = bestX;
     }
 
@@ -26,7 +27,7 @@ public class Swarm {
         return bestY;
     }
 
-    public void setBestY(double bestY) {
+    public void bestY(double bestY) {
         this.bestY = bestY;
     }
 
@@ -34,7 +35,7 @@ public class Swarm {
         return bestSize;
     }
 
-    public void setBestSize(double bestSize) {
+    public void bestSize(double bestSize) {
         this.bestSize = bestSize;
     }
 

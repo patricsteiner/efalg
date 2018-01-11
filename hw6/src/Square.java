@@ -6,49 +6,55 @@ import java.util.List;
 public class Square {
 
     private double centerX, centerY;
-    private double size, maxSize;
-    private double angle, bestAngle;
-    private double growthFactor = 1.001;
-    private double tiltDegrees = 1;
+    private double size;
+    private double angle;
     private Polygon polygon;
     private List<Line2D> lines;
-    private boolean frozen;
 
     public Square(Polygon polygon, double centerX, double centerY, double size) {
         if (polygon == null) throw new IllegalArgumentException("polygon must not be null");
         if (size <= 0) throw new IllegalArgumentException("size must be > 0");
         this.polygon = polygon;
-        this.centerX = centerX;
-        this.centerY = centerY;
         this.size = size;
-        calculateLines();
-    }
-
-    public void grow() {
-        this.size *= growthFactor;
-        calculateLines();
-    }
-
-    public void shrink() {
-        this.size /= growthFactor;
-        calculateLines();
-    }
-
-    public void growthFactor(double growthFactor) {
-        if (growthFactor <= 0) throw new IllegalArgumentException("growthFactor must be > 0");
-        this.growthFactor = growthFactor;
-    }
-
-    public void tilt() {
-        this.angle += tiltDegrees;
-        calculateLines();
+        center(centerX, centerY);
     }
 
     public List<Line2D> lines() {
         return lines;
     }
 
-    private void calculateLines() {
+    public double size() {
+        return size;
+    }
+
+    public void center(double x, double y) {
+        centerX = x;
+        centerY = y;
+        lines = calculateLines(this.size, angle);
+    }
+
+    public void rotateAndGrow() {
+        if (!polygon.contains(centerX, centerY)) {
+            size = 0.0001;
+            angle = 0;
+            return;
+        }
+        double tmpSize = size;
+        double tmpAngle = 0;
+        while (tmpAngle < 90) {
+            List<Line2D> tmpLines = calculateLines(tmpSize, tmpAngle);
+            while (!polygon.intersects(tmpLines)) {
+                size = tmpSize;
+                angle = tmpAngle;
+                lines = tmpLines;
+                tmpSize *= 1.001;
+                tmpLines = calculateLines(tmpSize, tmpAngle);
+            }
+            tmpAngle++;
+        }
+    }
+
+    private List<Line2D> calculateLines(double size, double angle) {
         double angleRad = angle * Math.PI / 180;
         Point2D p1 = new Point2D.Double(centerX - size, centerY);
         translate(p1, angleRad);
@@ -58,7 +64,7 @@ public class Square {
         translate(p3, angleRad);
         Point2D p4 = new Point2D.Double(centerX, centerY - size);
         translate(p4, angleRad);
-        lines = Arrays.asList(
+        return Arrays.asList(
                 new Line2D.Double(p1, p2),
                 new Line2D.Double(p2, p3),
                 new Line2D.Double(p3, p4),
@@ -72,55 +78,6 @@ public class Square {
         double x = centerX + tempX * Math.sin(angleRad) + tempY * Math.cos(angleRad);
         double y = centerY + tempX * Math.cos(angleRad) - tempY * Math.sin(angleRad);
         point.setLocation(x, y);
-    }
-
-    public boolean intersects() {
-        return polygon.lines().stream().anyMatch(polygonLine -> lines().stream().anyMatch(squareLine -> squareLine.intersectsLine(polygonLine)));
-    }
-
-    public boolean canGrow() {
-        grow();
-        boolean canGrow = !intersects();
-        shrink();
-        return canGrow;
-    }
-
-    public void tiltDegrees(double tiltDegrees) {
-        this.tiltDegrees = tiltDegrees;
-    }
-
-    public double angle() {
-        return angle;
-    }
-
-    public double bestAngle() {
-        return bestAngle;
-    }
-
-    public void bestAngle(double bestAngle) {
-        this.bestAngle = bestAngle;
-    }
-
-    public double size() {
-        return size;
-    }
-
-    public double maxSize() {
-        return maxSize;
-    }
-
-    public void maxSize(double maxSize) {
-        this.maxSize = maxSize;
-    }
-
-    public void freeze() {
-        frozen = true;
-        size = maxSize;
-        angle = bestAngle;
-    }
-
-    public boolean frozen() {
-        return frozen;
     }
 
 }
