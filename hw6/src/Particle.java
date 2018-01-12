@@ -1,7 +1,7 @@
 public class Particle {
 
     private final Swarm swarm;
-    private final double lazyness;
+    private double stamina;
     private final double cognitiveBias;
     private final double socialBias;
     private final Polygon polygon;
@@ -22,8 +22,8 @@ public class Particle {
         square = new Square(polygon, x, y, polygon.width() / 1000);
         velocityX = 0;
         velocityY = 0;
-        lazyness = 0.01;
-        cognitiveBias = .2;
+        stamina = 1;
+        cognitiveBias = .3;
         socialBias = 1;
     }
 
@@ -50,11 +50,12 @@ public class Particle {
     public void move() {
         double r1 = Math.random();
         double r2 = Math.random();
-        velocityX = lazyness * velocityX + cognitiveBias * r1 * (bestX - x) + socialBias * r2 * (swarm.bestX() - x);
-        velocityY = lazyness * velocityY + cognitiveBias * r1 * (bestY - y) + socialBias * r2 * (swarm.bestY() - y);
+        velocityX = stamina * velocityX + cognitiveBias * r1 * (bestX - x) + socialBias * r2 * (swarm.bestX() - x);
+        velocityY = stamina * velocityY + cognitiveBias * r1 * (bestY - y) + socialBias * r2 * (swarm.bestY() - y);
         x += velocityX;
         y += velocityY;
         square.center(x, y);
+        stamina *= 0.9;
     }
 
 }

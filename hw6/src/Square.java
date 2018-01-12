@@ -1,12 +1,14 @@
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * A square is defined by a center point, a size and an angle.
+ * Size is the length of the diagonal.
+ * Anlge = 0: Square stands on the edge, like this <>
+ * Angle = 45: Square stands on the border like this []
  */
 public class Square {
 
@@ -80,13 +82,13 @@ public class Square {
      */
     private List<Line2D> calculateLines(double size, double angle) {
         double angleRad = angle * Math.PI / 180;
-        Point2D p1 = new Point2D.Double(centerX - size, centerY);
+        Point2D p1 = new Point2D.Double(centerX - size/2, centerY);
         translate(p1, angleRad);
-        Point2D p2 = new Point2D.Double(centerX, centerY + size);
+        Point2D p2 = new Point2D.Double(centerX, centerY + size/2);
         translate(p2, angleRad);
-        Point2D p3 = new Point2D.Double(centerX + size, centerY);
+        Point2D p3 = new Point2D.Double(centerX + size/2, centerY);
         translate(p3, angleRad);
-        Point2D p4 = new Point2D.Double(centerX, centerY - size);
+        Point2D p4 = new Point2D.Double(centerX, centerY - size/2);
         translate(p4, angleRad);
         return Arrays.asList(
                 new Line2D.Double(p1, p2),

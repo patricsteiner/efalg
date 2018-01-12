@@ -15,35 +15,43 @@ public class PolyPane extends BorderPane {
     private Polygon polygon;
     private List<Square> squares;
     private final Canvas canvas;
+    private double ratio;
 
     public PolyPane() {
         canvas = new Canvas();
         setCenter(canvas);
         canvas.widthProperty().bind(widthProperty());
         canvas.heightProperty().bind(heightProperty());
-        widthProperty().addListener(e -> draw());
-        heightProperty().addListener(e -> draw());
+        widthProperty().addListener(e -> calculateRatioAndDraw());
+        heightProperty().addListener(e -> calculateRatioAndDraw());
         setOnMouseClicked(e -> System.out.println(e.getX() + " " + e.getY())); // secret function to easily create polygons for testing
+    }
+
+    private void calculateRatioAndDraw() {
+        if (polygon == null || squares == null) return;
+        ratio = polygon.width() > polygon.height() ? getWidth() / polygon.width() : getHeight() / polygon.height();
+        draw();
     }
 
     public void setPolygon(Polygon polygon) {
         this.polygon = polygon;
+        calculateRatioAndDraw();
     }
 
     public void setSquares(List<Square> squares) {
         this.squares = squares;
+        calculateRatioAndDraw();
     }
 
     private double scaleX(double x) {
-        return getWidth() / polygon.width() * (x - polygon.minX()) * .97 + 10;
+        return ratio * (x - polygon.minX()) * .97 + 10;
     }
 
     private double scaleY(double y) {
-        return getWidth() / polygon.width() * (y - polygon.minY()) * .97 + 10;
+        return ratio * (y - polygon.minY()) * .97 + 10;
     }
 
     public void draw() {
-        if (polygon == null) return;
         GraphicsContext gc = canvas.getGraphicsContext2D();
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.WHITE);

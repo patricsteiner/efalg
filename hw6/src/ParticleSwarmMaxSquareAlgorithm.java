@@ -1,4 +1,3 @@
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +29,12 @@ public class ParticleSwarmMaxSquareAlgorithm {
     }
 
     public Square run() {
+        if (polygon.isSquare()) {
+            System.out.println("polygon is a square!");
+            Square maxSquare = new Square(polygon, (polygon.minX() + polygon.maxX()) / 2, (polygon.minY() + polygon.maxY()) / 2, polygon.squareSize());
+            maxSquare.angle(45);
+            return maxSquare;
+        }
         for (int i = 0; i < epochs; i++) {
             for (Particle particle : swarm.particles()) {
                 particle.maximizeFitnessAtCurrentLocation();

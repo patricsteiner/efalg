@@ -71,4 +71,15 @@ public class Polygon {
         return maxY - minY;
     }
 
+    public boolean isSquare() {
+        return points.size() == 4
+                && points.get(0).distance(points.get(2)) == points.get(1).distance(points.get(3))
+                && points.get(0).distance(points.get(1)) == points.get(1).distance(points.get(2));
+    }
+
+    public double squareSize() {
+        if (!isSquare()) throw new RuntimeException("this polygon is not a square");
+        return points.get(0).distance(points.get(2));
+    }
+
 }
