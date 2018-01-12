@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.DoubleStream;
 
+/**
+ * Represents a polygon, a set of connected points.
+ */
 public class Polygon {
 
     private final javafx.scene.shape.Polygon fxPolygon;

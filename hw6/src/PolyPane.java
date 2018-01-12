@@ -7,6 +7,9 @@ import java.awt.geom.Line2D;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * A scaling Pane that visually represents the ParticleSwarmMaxSquareAlgorithm.
+ */
 public class PolyPane extends BorderPane {
 
     private Polygon polygon;
@@ -20,7 +23,7 @@ public class PolyPane extends BorderPane {
         canvas.heightProperty().bind(heightProperty());
         widthProperty().addListener(e -> draw());
         heightProperty().addListener(e -> draw());
-        setOnMouseClicked(e -> System.out.println(e.getX() + " " + e.getY()));
+        setOnMouseClicked(e -> System.out.println(e.getX() + " " + e.getY())); // secret function to easily create polygons for testing
     }
 
     public void setPolygon(Polygon polygon) {
@@ -42,11 +45,16 @@ public class PolyPane extends BorderPane {
     public void draw() {
         if (polygon == null) return;
         GraphicsContext gc = canvas.getGraphicsContext2D();
+        gc.setStroke(Color.BLACK);
         gc.setFill(Color.WHITE);
         gc.fillRect(0, 0, getWidth(), getHeight());
         gc.setLineWidth(2);
         polygon.lines().forEach(drawLine(gc));
         gc.setLineWidth(1);
+        if (squares.size() == 1) {
+            gc.setLineWidth(2);
+            gc.setStroke(Color.GREEN);
+        }
         squares.stream().flatMap(square -> square.lines().stream()).forEach(drawLine(gc));
     }
 

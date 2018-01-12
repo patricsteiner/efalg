@@ -1,15 +1,16 @@
 public class Particle {
 
     private final Swarm swarm;
-    private double x, y;
-    private double velocityX, velocityY;
     private final double lazyness;
     private final double cognitiveBias;
     private final double socialBias;
     private final Polygon polygon;
     private final Square square;
+    private double x, y;
+    private double velocityX, velocityY;
     private double bestX, bestY;
     private double bestSize;
+    private double bestAngle;
 
     public Particle(Swarm swarm, Polygon polygon, double x, double y) {
         this.swarm = swarm;
@@ -36,11 +37,13 @@ public class Particle {
             bestSize = square.size();
             bestX = x;
             bestY = y;
+            bestAngle = square.angle();
         }
         if (bestSize >= swarm.bestSize()) {
             swarm.bestSize(bestSize);
             swarm.bestX(x);
             swarm.bestY(y);
+            swarm.bestAngle(bestAngle);
         }
     }
 
